@@ -31,8 +31,8 @@ Frente a competidores (Chordify, Oolimo, ChordFinder), Fretwise compite por **pr
 ## 2. Nombre y tagline
 
 ### 2.1 Nombre
-**Fretwise** (dos palabras, mayúsculas iniciales en prosa, VERSALES en logo).
-Nunca: *fretwise*, *Fretwise*, *fretwise* (excepto en código/URLs), *Fretwise*.
+**Fretwise** (una palabra, mayúscula inicial en prosa, VERSALES en logo: FRETWISE).
+Nunca: *Fret Wise*, *FretWise*, *fret-wise*, *Fretwize*. En código/URLs/slug: `fretwise`.
 
 ### 2.2 Tagline principal
 > **El laboratorio de acordes.**
