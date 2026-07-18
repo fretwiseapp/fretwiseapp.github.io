@@ -7,6 +7,9 @@ import { fileURLToPath, URL } from 'node:url';
 // stays typed against Vitest's vendored Vite copy and doesn't clash with
 // top-level Vite plugin types.
 export default defineConfig({
+  // Relative base so the single-file build works from any path, including a
+  // GitHub Pages project subpath (username.github.io/chord-lab/).
+  base: './',
   plugins: [react(), viteSingleFile()],
   resolve: {
     alias: {
