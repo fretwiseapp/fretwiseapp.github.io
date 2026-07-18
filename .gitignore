@@ -6,3 +6,6 @@ dist/
 .env
 .env.local
 coverage/
+
+# Agent tooling config (local only — not part of the product)
+.claude/
