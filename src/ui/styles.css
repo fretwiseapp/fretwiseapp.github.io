@@ -1,0 +1,551 @@
+/* ==============================================
+   Chord Lab — global styles
+   Organized by concern: tokens, reset, layout, controls, fretboard, results.
+   Uses CSS custom properties so theme changes cascade without JS repaint.
+   Stays minimal (no framework). Tailwind or vanilla-extract could slot in later.
+   ============================================== */
+
+/* ----- Design tokens (light theme, default) -----
+   Mirrors brand/BRAND.md — neutrals + wood signature + the three sacred
+   chord colors (red=1, blue=3, amber=5). Dark theme overrides below only
+   swap surfaces; the sacred colors stay identical across themes. */
+:root {
+  /* Brand neutrals (match landing & BRAND.md) */
+  --ink-950: #0e0e10;
+  --ink-900: #1a1a1a;
+  --ink-700: #444;
+  --ink-500: #888;
+
+  /* Signature wood (fretboard stage, never themed) */
+  --wood-900: #2a1a10;
+  --wood-700: #4a2e1a;
+  --wood-accent: #c8b896;
+
+  /* The three sacred chord colors */
+  --chord-red: #c0392b;   /* 1 — root */
+  --chord-blue: #2e86c1;  /* 3 — major third */
+  --chord-amber: #f39c12; /* 5 — perfect fifth */
+
+  /* Radii — brand scale */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-pill: 999px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Surfaces */
+  --bg-page: #fafaf7;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0ede5;
+  --bg-subtle: #f5f2ea;
+  --bg-input: #ffffff;
+
+  /* Borders */
+  --border-default: #e0ddd5;
+  --border-soft: #e8e6e0;
+  --border-hairline: #eee;
+  --border-hairline-soft: #f2f2ef;
+
+  /* Text */
+  --text-primary: #1a1a1a;
+  --text-secondary: #444;
+  --text-tertiary: #666;
+  --text-muted: #888;
+  --text-faint: #aaa;
+
+  /* Accents (primary dark button) */
+  --accent-bg: #1a1a1a;
+  --accent-fg: #ffffff;
+
+  /* Brand red (constant across themes) */
+  --brand-red: #c0392b;
+  --brand-red-soft: #fff5f3;
+
+  /* Stage (wooden fretboard) — stays dark in both modes */
+  --stage-bg: #2a1a10;
+  --stage-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --stage-string-text: #c8b896;
+  --stage-string-btn-bg: rgba(255, 255, 255, 0.08);
+  --stage-string-btn-border: rgba(255, 255, 255, 0.2);
+  --stage-string-btn-fg: #e8dcc0;
+  --stage-string-muted-bg: rgba(0, 0, 0, 0.3);
+  --stage-string-muted-fg: #888;
+  --stage-string-open-bg: #2d6a3e;
+  --stage-string-open-border: #4ade80;
+  --stage-string-open-fg: #d0f8d8;
+
+  /* Panels */
+  --panel-analysis-bg: #fff8e8;
+  --panel-analysis-border: #f0dfa8;
+  --panel-analysis-heading: #8b6914;
+  --panel-analysis-body: #5a4a2a;
+
+  --panel-warn-bg: #fff0e0;
+  --panel-warn-border: #f5c8a0;
+  --panel-warn-text: #8b4a14;
+
+  /* Semantic note chips */
+  --chip-root-bg: var(--brand-red);
+  --chip-root-border: var(--brand-red);
+  --chip-root-fg: #ffffff;
+  --chip-root-deg: rgba(255, 255, 255, 0.7);
+
+  --chip-tension-bg: #fdf0d0;
+  --chip-tension-border: #d4a028;
+  --chip-tension-fg: #7a5210;
+  --chip-tension-deg: #a47a18;
+
+  --chip-alt-bg: #e4efd4;
+  --chip-alt-border: #7a9a4a;
+  --chip-alt-fg: #405028;
+  --chip-alt-deg: #6a8a3a;
+
+  --scale-sugg-bg: #f0f5e8;
+  --scale-sugg-border: #c8d8c0;
+  --scale-sugg-fg: #3a5020;
+  --scale-sugg-hover-bg: #3a5020;
+  --scale-sugg-hover-fg: #ffffff;
+
+  /* Shadows — brand scale (softer near-field + a longer drop) */
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.06);
+  --shadow-hero: 0 20px 60px rgba(0, 0, 0, 0.12);
+
+  /* Code blocks */
+  --code-bg: var(--bg-subtle);
+  --code-fg: var(--text-secondary);
+}
+
+/* ----- Dark theme overrides ----- */
+[data-theme='dark'] {
+  --bg-page: #0e0e10;
+  --bg-card: #1a1a1d;
+  --bg-card-hover: #26262c;
+  --bg-subtle: #23232a;
+  --bg-input: #23232a;
+
+  --border-default: #33333c;
+  --border-soft: #2a2a32;
+  --border-hairline: #2a2a32;
+  --border-hairline-soft: #22222a;
+
+  --text-primary: #e8e6e0;
+  --text-secondary: #bfbcb3;
+  --text-tertiary: #a0a0a8;
+  --text-muted: #8a8a92;
+  --text-faint: #5e5e66;
+
+  --accent-bg: #e8e6e0;
+  --accent-fg: #1a1a1a;
+
+  --brand-red-soft: #3a1a1a;
+
+  --stage-bg: #1d120b;
+  --stage-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+  --panel-analysis-bg: #2a2414;
+  --panel-analysis-border: #5a4a2a;
+  --panel-analysis-heading: #d4b870;
+  --panel-analysis-body: #e0d2a8;
+
+  --panel-warn-bg: #2a1a12;
+  --panel-warn-border: #7a4a2a;
+  --panel-warn-text: #f0b890;
+
+  --chip-tension-bg: #3a2a10;
+  --chip-tension-border: #a47a18;
+  --chip-tension-fg: #f4d080;
+  --chip-tension-deg: #c8a860;
+
+  --chip-alt-bg: #1f2a14;
+  --chip-alt-border: #6a8a3a;
+  --chip-alt-fg: #c0d890;
+  --chip-alt-deg: #9abb60;
+
+  --scale-sugg-bg: #1f2a14;
+  --scale-sugg-border: #3a5020;
+  --scale-sugg-fg: #c0d890;
+  --scale-sugg-hover-bg: #c0d890;
+  --scale-sugg-hover-fg: #1f2a14;
+
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.25), 0 12px 32px rgba(0, 0, 0, 0.35);
+  --shadow-hero: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  padding: 20px 16px;
+  -webkit-font-smoothing: antialiased;
+  /* Kill the iOS Safari gray tap flash — focus-visible rings replace it for keyboard users. */
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+/* Touch: eliminate the 300ms double-tap-zoom delay on interactive surfaces without
+   losing the ability to scroll horizontally within .stage. Pinch-zoom on the page body
+   still works because we only scope this to interactive controls and the fretboard SVG. */
+button, select, input, a, [role='button'] { touch-action: manipulation; }
+
+.app { max-width: 1200px; margin: 0 auto; }
+
+h1 { font-size: 20px; font-weight: 600; }
+.subtitle { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+
+/* ---- Brand header (mark + wordmark + tagline + actions) ----
+   The header is the main branding surface of the app shell. The wordmark uses
+   tight letter-spacing as defined in BRAND.md; the tagline sits underneath in
+   a much smaller, subdued typographic register so the lockup reads as a whole. */
+.brand-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-hairline);
+}
+.brand-lockup {
+  display: inline-flex; align-items: center; gap: 12px;
+  color: inherit; text-decoration: none;
+  border-radius: var(--r-md);
+  padding: 2px;
+  transition: opacity 0.15s ease;
+}
+.brand-lockup:hover { opacity: 0.88; }
+.brand-lockup:focus-visible { outline: 2px solid var(--brand-red); outline-offset: 4px; }
+.brand-mark {
+  width: 40px; height: 40px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
+  display: block;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1; }
+.brand-wordmark {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--text-primary);
+}
+.brand-tagline {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.header-actions { display: inline-flex; align-items: center; gap: 8px; }
+
+@media (max-width: 520px) {
+  .brand-tagline { display: none; }
+  .brand-mark { width: 36px; height: 36px; }
+  .brand-wordmark { font-size: 14px; letter-spacing: 0.18em; }
+}
+
+.theme-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: inherit; font-size: 13px; padding: 6px 12px;
+  background: var(--bg-card); color: var(--text-primary);
+  border: 1px solid var(--border-default); border-radius: 999px;
+  cursor: pointer; transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.theme-toggle:hover { background: var(--bg-card-hover); border-color: var(--text-muted); }
+.theme-toggle:focus-visible { outline: 2px solid var(--brand-red); outline-offset: 2px; }
+.theme-toggle .icon { font-size: 14px; line-height: 1; }
+.theme-toggle .label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+
+/* ---- Hero chord card ---- */
+.hero-bar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.hero-chord {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  padding: 14px 22px;
+  min-width: 200px;
+  text-align: right;
+  box-shadow: var(--shadow-card);
+}
+.hero-chord.is-empty { min-width: 200px; }
+.hero-chord.is-empty .hc-name { color: var(--text-faint); }
+.hc-name { font-size: 36px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; color: var(--text-primary); }
+.hc-desc { font-size: 11px; color: var(--text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ---- Control bars ---- */
+.bar {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  margin-bottom: 14px; padding: 12px 14px;
+  background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-card);
+}
+.bar label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+.bar select, .bar input, .bar button {
+  font: inherit; font-size: 13px; padding: 6px 10px;
+  border: 1px solid var(--border-default); border-radius: 7px;
+  background: var(--bg-input); color: var(--text-primary); cursor: pointer;
+}
+.bar input { min-width: 120px; }
+.bar button:hover { background: var(--bg-card-hover); }
+.bar button.primary { background: var(--accent-bg); color: var(--accent-fg); border-color: var(--accent-bg); font-weight: 500; }
+.bar .sep { width: 1px; height: 18px; background: var(--border-default); margin: 0 4px; }
+.bar .spacer { flex: 1; }
+
+/* Segmented toggle */
+.toggle { display: inline-flex; border: 1px solid var(--border-default); border-radius: 7px; overflow: hidden; }
+.toggle button { font: inherit; font-size: 12px; padding: 5px 10px; border: none; background: var(--bg-input); cursor: pointer; color: var(--text-tertiary); }
+.toggle button + button { border-left: 1px solid var(--border-default); }
+.toggle button.on { background: var(--accent-bg); color: var(--accent-fg); }
+
+/* Chord builder chips */
+.chips { display: flex; gap: 5px; flex-wrap: wrap; }
+.chips button {
+  font: inherit; font-size: 12px; padding: 5px 11px; border-radius: 999px;
+  border: 1px solid var(--border-default); background: var(--bg-card); cursor: pointer; color: var(--text-secondary); font-weight: 500;
+}
+.chips button:hover { background: var(--bg-card-hover); }
+.chips button.on { background: var(--accent-bg); color: var(--accent-fg); border-color: var(--accent-bg); }
+
+/* ---- Fretboard ---- */
+.stage {
+  background: var(--stage-bg); border-radius: var(--r-xl); padding: 18px; margin-bottom: 18px;
+  overflow-x: auto; box-shadow: var(--shadow-hero);
+}
+
+/* "Limpiar" sits in its own row BELOW the fretboard — no absolute positioning,
+   so it can never overlap fret graphics. Horizontally pushed toward the right
+   to land roughly under frets 15-17 on wide layouts; flush-right on narrow ones. */
+.stage-clear-row {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 22%;
+  margin-top: 10px;
+}
+@media (max-width: 900px) {
+  .stage-clear-row { padding-right: 8px; }
+}
+
+/* Pseudo-cylinder 3D click button: white face with a subtle top highlight and a
+   solid colored shadow underneath that compresses on :active, giving the pill a
+   real "push" feel. No mystery gradients — just layered shadows. */
+.stage-clear {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  padding: 11px 26px;
+  border-radius: 999px;
+  border: 1px solid #c0c0c6;
+  background: linear-gradient(180deg, #ffffff 0%, #f4f4f6 55%, #e6e6ea 100%);
+  color: #1a1a1a;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1),
+    0 3px 0 rgba(30, 20, 10, 0.45),
+    0 5px 10px rgba(0, 0, 0, 0.35);
+  transition: transform 90ms var(--ease), box-shadow 90ms var(--ease), background 160ms var(--ease);
+}
+.stage-clear:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #fafafc 55%, #ededf0 100%);
+}
+.stage-clear:active {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.12),
+    0 0 0 rgba(30, 20, 10, 0.45),
+    0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.stage-clear:focus-visible {
+  outline: 2px solid var(--wood-accent);
+  outline-offset: 3px;
+}
+/* 22-fret layout needs a wider canvas than the old 15-fret one; 1100 keeps
+   each cell ≥ ~48 px on desktop and the .stage scroller handles narrower viewports. */
+.stage svg { display: block; width: 100%; min-width: 1100px; height: auto; touch-action: manipulation; }
+
+.string-btns { display: flex; gap: 6px; justify-content: center; margin-top: 10px; font-size: 11px; color: var(--stage-string-text); }
+.string-btns span { align-self: center; margin-right: 4px; }
+.string-btns button {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid var(--stage-string-btn-border); background: var(--stage-string-btn-bg);
+  color: var(--stage-string-btn-fg); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.string-btns button.muted { background: var(--stage-string-muted-bg); color: var(--stage-string-muted-fg); }
+.string-btns button.open { background: var(--stage-string-open-bg); border-color: var(--stage-string-open-border); color: var(--stage-string-open-fg); }
+
+/* ---- Results cards ---- */
+.results { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 760px) { .results { grid-template-columns: 1.2fr 1fr; } }
+
+.card { background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: var(--r-lg); padding: 18px 20px; box-shadow: var(--shadow-card); }
+.card h3 { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+.chord-name { font-size: 44px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
+.desc { font-size: 13px; color: var(--text-muted); margin-top: 6px; }
+
+.audio-ctrls { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.audio-ctrls button {
+  font: inherit; font-size: 13px; font-weight: 500; padding: 8px 14px;
+  border-radius: 8px; border: 1px solid var(--border-default); background: var(--bg-card); color: var(--text-primary); cursor: pointer;
+}
+.audio-ctrls button:hover { background: var(--bg-card-hover); }
+.audio-ctrls button.p { background: var(--brand-red); color: #ffffff; border-color: var(--brand-red); }
+
+.alts { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-hairline); }
+.alts .t { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-weight: 600; }
+.alt { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; border-top: 1px solid var(--border-hairline-soft); }
+.alt:first-child { border-top: none; }
+.alt .m { font-size: 11px; color: var(--text-muted); }
+
+.notes { display: flex; flex-wrap: wrap; gap: 6px; }
+.n { display: inline-flex; flex-direction: column; align-items: center; padding: 7px 11px; border-radius: 8px; background: var(--bg-subtle); border: 1px solid transparent; min-width: 48px; cursor: pointer; }
+.n:hover { border-color: var(--text-primary); }
+.n .nm { font-size: 15px; font-weight: 700; }
+.n .dg { font-size: 10px; color: var(--text-muted); margin-top: 1px; font-weight: 600; letter-spacing: 0.03em; }
+.n.r { background: var(--chip-root-bg); border-color: var(--chip-root-border); }
+.n.r .nm { color: var(--chip-root-fg); } .n.r .dg { color: var(--chip-root-deg); }
+.n.t { background: var(--chip-tension-bg); border-color: var(--chip-tension-border); }
+.n.t .nm { color: var(--chip-tension-fg); } .n.t .dg { color: var(--chip-tension-deg); }
+.n.a { background: var(--chip-alt-bg); border-color: var(--chip-alt-border); }
+.n.a .nm { color: var(--chip-alt-fg); } .n.a .dg { color: var(--chip-alt-deg); }
+
+.struct { margin-top: 12px; font-size: 12px; color: var(--text-muted); }
+.struct code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-size: 11px; color: var(--code-fg); }
+
+.analysis { margin-top: 12px; padding: 10px 12px; background: var(--panel-analysis-bg); border: 1px solid var(--panel-analysis-border); border-radius: 8px; }
+.analysis h4 { font-size: 10px; font-weight: 600; color: var(--panel-analysis-heading); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.analysis ul { margin: 0; padding-left: 16px; font-size: 12px; color: var(--panel-analysis-body); line-height: 1.5; }
+
+.warn { margin-top: 10px; padding: 8px 12px; background: var(--panel-warn-bg); border: 1px solid var(--panel-warn-border); border-radius: 8px; font-size: 12px; color: var(--panel-warn-text); }
+
+/* Empty state — branded, not just grey italic.
+   Shown before the user has any notes on the fretboard. Guides without
+   nagging. Mark at the top is decorative (aria-hidden in JSX). */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  padding: 40px 24px 32px;
+  text-align: center;
+}
+.empty-state .empty-mark {
+  width: 56px; height: 56px;
+  opacity: 0.85;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.empty-state h3 {
+  font-size: 15px; font-weight: 700;
+  color: var(--text-primary);
+  text-transform: none; letter-spacing: 0.01em;
+  margin: 0;
+}
+.empty-state .empty-lede {
+  font-size: 13px; color: var(--text-muted);
+  max-width: 44ch; line-height: 1.55;
+  margin: 0;
+}
+.empty-state .empty-hints {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+  margin-top: 6px;
+}
+.empty-state .empty-hint {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 7px 14px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-pill);
+  font-size: 12px; color: var(--text-secondary);
+}
+.empty-state .empty-hint .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  flex-shrink: 0;
+}
+.empty-state .empty-hint .dot.red   { background: var(--chord-red); }
+.empty-state .empty-hint .dot.blue  { background: var(--chord-blue); }
+.empty-state .empty-hint .dot.amber { background: var(--chord-amber); }
+
+.scales-sugg { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.scales-sugg button {
+  font: inherit; font-size: 11px; padding: 4px 9px; border-radius: 999px;
+  border: 1px solid var(--scale-sugg-border); background: var(--scale-sugg-bg); color: var(--scale-sugg-fg); cursor: pointer;
+}
+.scales-sugg button:hover { background: var(--scale-sugg-hover-bg); color: var(--scale-sugg-hover-fg); border-color: var(--scale-sugg-hover-bg); }
+
+.voicings { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.voicing-card {
+  background: var(--bg-page); border: 1px solid var(--border-soft); border-radius: 8px;
+  padding: 8px; cursor: pointer; transition: all 0.15s; min-width: 110px;
+  position: relative;
+}
+.voicing-card:hover { border-color: var(--brand-red); background: var(--bg-card); transform: translateY(-1px); }
+.voicing-card.active { border-color: var(--brand-red); background: var(--brand-red-soft); }
+.voicing-card .voicing-play {
+  position: absolute; top: 4px; right: 4px;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1px solid var(--border-default); background: var(--bg-card); cursor: pointer;
+  font-size: 9px; padding: 0; color: var(--brand-red); font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.voicing-card .voicing-play:hover { background: var(--brand-red); color: #ffffff; border-color: var(--brand-red); }
+.voicing-card .lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; text-align: center; margin-bottom: 4px; }
+.voicing-card .inv { font-size: 9px; color: var(--brand-red); font-weight: 600; text-align: center; margin-top: 4px; }
+.voicing-card svg { display: block; margin: 0 auto; }
+
+/* Family filter shown while "Ver todos" is active — isolate CAGED from jazz voicings.
+   Shares pill styling with .effects-picker below — same tactile feel for toggle groups. */
+.voicing-filter,
+.effects-picker {
+  display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center;
+  padding: 4px; border: 1px solid var(--border-default); border-radius: 8px;
+  background: var(--bg-input);
+}
+.voicing-filter button,
+.effects-picker button {
+  font: inherit; font-size: 11px; font-weight: 600; padding: 5px 10px;
+  border-radius: 6px; border: 1px solid transparent;
+  background: transparent; color: var(--text-tertiary); cursor: pointer;
+  transition: all 0.12s;
+}
+.voicing-filter button:hover,
+.effects-picker button:hover { background: var(--bg-card); color: var(--text-primary); }
+.voicing-filter button.on,
+.effects-picker button.on {
+  background: var(--accent-bg); color: var(--accent-fg); border-color: var(--accent-bg);
+}
+
+datalist { font-family: inherit; }
+
+/* Respect OS reduce-motion setting — theme transitions and voicing-card lift become instant. */
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  .voicing-card:hover { transform: none; }
+}
+
+/* Screen-reader-only utility, when visible text is undesirable. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* A11y: consistent focus ring where cursor-driven styles already exist. */
+button:focus-visible, select:focus-visible, input:focus-visible {
+  outline: 2px solid var(--brand-red);
+  outline-offset: 2px;
+}
+
+/* Error boundary surface — inherits card tokens. */
+.error-boundary {
+  max-width: 680px; margin: 40px auto; padding: 24px;
+  background: var(--bg-card); color: var(--text-primary);
+  border: 1px solid var(--panel-warn-border); border-radius: 12px;
+}
+.error-boundary h2 { font-size: 18px; margin-bottom: 8px; }
+.error-boundary p { color: var(--text-secondary); margin-bottom: 12px; }
+.error-boundary details { margin-top: 10px; font-size: 12px; color: var(--text-muted); }
+.error-boundary pre { background: var(--bg-subtle); padding: 10px; border-radius: 6px; overflow-x: auto; font-size: 11px; color: var(--text-secondary); }
+.error-boundary .actions { display: flex; gap: 8px; margin-top: 14px; }

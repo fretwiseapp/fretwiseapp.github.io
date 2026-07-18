@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Chord Lab — identificador de acordes de guitarra en tiempo real, con inversiones drop-2, escalas compatibles y audio Karplus-Strong. En el navegador. Sin registro." />
+  <meta name="robots" content="index, follow" />
+  <meta name="color-scheme" content="light" />
+  <meta name="theme-color" content="#0e0e10" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Chord Lab — el laboratorio de acordes" />
+  <meta property="og:description" content="Identificá acordes al instante. Inversiones drop-2, escalas, audio. En el navegador, sin servidores." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_AR" />
+
+  <!-- Favicon: same inline SVG as the app, for continuity. -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231a1a1a'/%3E%3Cg stroke='%233a3a3a' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M12 12v44M20 12v44M28 12v44M36 12v44M44 12v44M52 12v44'/%3E%3Cpath d='M8 24h48M8 40h48'/%3E%3C/g%3E%3Crect x='8' y='10' width='48' height='2' rx='1' fill='%23c8b896'/%3E%3Ccircle cx='20' cy='32' r='6.5' fill='%23c0392b'/%3E%3Ccircle cx='36' cy='48' r='6.5' fill='%232e86c1'/%3E%3Ccircle cx='52' cy='16' r='6.5' fill='%23f39c12'/%3E%3C/svg%3E" />
+
+  <title>Chord Lab · El laboratorio de acordes</title>
+
+  <style>
+    /* =========================================
+       Chord Lab — landing styles
+       Single file · inline CSS · system fonts
+       Mirrors the brand tokens from brand/BRAND.md
+       ========================================= */
+
+    :root {
+      /* Neutrals */
+      --ink-950: #0e0e10;
+      --ink-900: #1a1a1a;
+      --ink-700: #444;
+      --ink-500: #888;
+      --ink-300: #bfbcb3;
+      --ink-200: #e8e6e0;
+      --ink-100: #f5f2ea;
+      --cream-50: #fafaf7;
+
+      /* Signature wood */
+      --wood-900: #2a1a10;
+      --wood-700: #4a2e1a;
+
+      /* The three sacred chord colors */
+      --chord-red: #c0392b;
+      --chord-blue: #2e86c1;
+      --chord-amber: #f39c12;
+
+      /* Extended chord palette */
+      --chord-teal: #3aa894;
+      --chord-purple: #8e44ad;
+      --chord-rose: #db3f7b;
+      --chord-gold: #d68910;
+
+      /* Spacing scale */
+      --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px;
+      --sp-4: 16px;  --sp-5: 24px;  --sp-6: 32px;
+      --sp-7: 48px;  --sp-8: 64px;  --sp-9: 96px;
+      --sp-10: 128px;
+
+      /* Radii */
+      --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 20px; --r-pill: 999px;
+
+      /* Shadows */
+      --shadow-card: 0 2px 10px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.06);
+      --shadow-hero: 0 20px 60px rgba(0,0,0,0.35);
+
+      /* Motion */
+      --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream-50);
+      color: var(--ink-900);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter',
+                   system-ui, 'Segoe UI', sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 var(--sp-5); }
+
+    /* ---------- Nav ---------- */
+    .nav {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(250, 250, 247, 0.88);
+      backdrop-filter: saturate(180%) blur(10px);
+      -webkit-backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid rgba(26, 26, 26, 0.06);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    .brand { display: inline-flex; align-items: center; gap: var(--sp-3); }
+    .brand svg { display: block; }
+    .brand-wm {
+      font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: var(--ink-900);
+    }
+    .nav-links {
+      display: inline-flex; gap: var(--sp-5); align-items: center;
+      font-size: 13px; color: var(--ink-700); font-weight: 500;
+    }
+    .nav-links a:hover { color: var(--ink-900); }
+    .nav-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--ink-900); color: var(--cream-50);
+      padding: 9px 16px; border-radius: var(--r-pill);
+      font-size: 13px; font-weight: 600;
+      transition: transform 150ms var(--ease), background-color 150ms var(--ease);
+    }
+    .nav-cta:hover { background: var(--chord-red); transform: translateY(-1px); }
+
+    @media (max-width: 720px) {
+      .nav-links > a:not(.nav-cta) { display: none; }
+    }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      background: var(--ink-950);
+      color: var(--ink-200);
+      padding: var(--sp-10) 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .hero::before {
+      /* Subtle radial glow from the amber dot position — barely visible but adds depth */
+      content: '';
+      position: absolute;
+      right: -200px; top: -200px; width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(243, 156, 18, 0.08), transparent 60%);
+      pointer-events: none;
+    }
+    .hero-grid {
+      display: grid; grid-template-columns: 1.1fr 1fr;
+      gap: var(--sp-8); align-items: center;
+      position: relative; z-index: 1;
+    }
+    .eyebrow {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--chord-amber);
+      margin-bottom: var(--sp-5);
+      display: inline-flex; align-items: center; gap: var(--sp-2);
+    }
+    .eyebrow::before {
+      content: ''; width: 24px; height: 1px; background: currentColor; display: inline-block;
+    }
+    h1.hero-title {
+      font-size: clamp(44px, 8vw, 88px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      line-height: 0.98;
+      color: #fff;
+      margin-bottom: var(--sp-5);
+    }
+    h1.hero-title .accent { color: var(--chord-red); }
+    .hero-sub {
+      font-size: clamp(16px, 1.6vw, 19px);
+      color: var(--ink-300);
+      max-width: 520px;
+      margin-bottom: var(--sp-6);
+      line-height: 1.5;
+    }
+    .hero-cta { display: inline-flex; gap: var(--sp-3); flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--sp-2);
+      padding: 14px 22px;
+      border-radius: var(--r-pill);
+      font-size: 14px; font-weight: 600;
+      border: 1px solid transparent;
+      transition: transform 150ms var(--ease), background-color 150ms var(--ease), border-color 150ms var(--ease);
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--chord-red); color: #fff;
+    }
+    .btn-primary:hover { transform: translateY(-2px); background: #d94b3b; }
+    .btn-ghost {
+      background: transparent; color: var(--ink-200);
+      border-color: rgba(232, 230, 224, 0.2);
+    }
+    .btn-ghost:hover { border-color: var(--ink-200); }
+    .hero-meta {
+      margin-top: var(--sp-6);
+      display: inline-flex; gap: var(--sp-5); flex-wrap: wrap;
+      font-size: 12px; color: var(--ink-500);
+    }
+    .hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
+    .hero-meta .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--chord-amber); }
+
+    /* Hero fretboard visual */
+    .hero-visual {
+      background: var(--wood-900);
+      border-radius: var(--r-xl);
+      padding: var(--sp-6);
+      box-shadow: var(--shadow-hero);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .hero-visual svg { display: block; width: 100%; height: auto; }
+
+    .hero-visual-caption {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: var(--sp-4); padding: 0 var(--sp-2);
+      font-size: 12px; color: #c8b896;
+    }
+    .chord-badge {
+      font-family: 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+      font-size: 18px; font-weight: 700; color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    @media (max-width: 860px) {
+      .hero-grid { grid-template-columns: 1fr; gap: var(--sp-7); }
+    }
+
+    /* Dot pulse animation (respects reduce-motion) */
+    @keyframes dot-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+    .hero-dot {
+      transform-origin: center;
+      transform-box: fill-box;
+      animation: dot-pulse 3.4s var(--ease) infinite;
+    }
+    .hero-dot:nth-of-type(2) { animation-delay: 0.4s; }
+    .hero-dot:nth-of-type(3) { animation-delay: 0.8s; }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-dot { animation: none; }
+    }
+
+    /* ---------- Pillars strip ---------- */
+    .pillars {
+      padding: var(--sp-8) 0;
+      border-bottom: 1px solid rgba(26, 26, 26, 0.06);
+    }
+    .pillar-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-7);
+    }
+    .pillar h3 {
+      font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ink-500);
+      margin-bottom: var(--sp-3);
+      display: inline-flex; align-items: center; gap: var(--sp-2);
+    }
+    .pillar h3 .pill-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .pillar-grid > :nth-child(1) .pill-dot { background: var(--chord-red); }
+    .pillar-grid > :nth-child(2) .pill-dot { background: var(--chord-blue); }
+    .pillar-grid > :nth-child(3) .pill-dot { background: var(--chord-amber); }
+    .pillar p {
+      font-size: 18px; line-height: 1.45; color: var(--ink-900); letter-spacing: -0.01em;
+    }
+    .pillar strong { font-weight: 600; }
+    @media (max-width: 720px) {
+      .pillar-grid { grid-template-columns: 1fr; gap: var(--sp-5); }
+    }
+
+    /* ---------- Section headers ---------- */
+    .section { padding: var(--sp-9) 0; }
+    .section-dark { background: var(--ink-950); color: var(--ink-200); }
+    .section-head { max-width: 680px; margin-bottom: var(--sp-7); }
+    .section-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--chord-red);
+      margin-bottom: var(--sp-3);
+    }
+    .section-dark .section-eyebrow { color: var(--chord-amber); }
+    .section-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.08;
+      margin-bottom: var(--sp-4);
+    }
+    .section-dark .section-title { color: #fff; }
+    .section-lede {
+      font-size: 18px; line-height: 1.55; color: var(--ink-700);
+    }
+    .section-dark .section-lede { color: var(--ink-300); }
+
+    /* ---------- Feature grid ---------- */
+    .feature-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-4);
+    }
+    .feature-card {
+      background: #fff;
+      border: 1px solid rgba(26, 26, 26, 0.08);
+      border-radius: var(--r-lg);
+      padding: var(--sp-5);
+      transition: transform 150ms var(--ease), box-shadow 150ms var(--ease), border-color 150ms var(--ease);
+    }
+    .feature-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-card);
+      border-color: rgba(26, 26, 26, 0.14);
+    }
+    .feature-icon {
+      width: 42px; height: 42px; border-radius: var(--r-md);
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-bottom: var(--sp-4);
+      background: var(--ink-100);
+    }
+    .feature-icon svg { display: block; }
+    .feature-card h3 {
+      font-size: 17px; font-weight: 600; letter-spacing: -0.015em;
+      margin-bottom: 6px;
+    }
+    .feature-card p { font-size: 14px; color: var(--ink-700); line-height: 1.55; }
+
+    /* Color-variant icons per feature */
+    .feature-card:nth-child(1) .feature-icon { background: rgba(192, 57, 43, 0.10); color: var(--chord-red); }
+    .feature-card:nth-child(2) .feature-icon { background: rgba(46, 134, 193, 0.10); color: var(--chord-blue); }
+    .feature-card:nth-child(3) .feature-icon { background: rgba(243, 156, 18, 0.14); color: var(--chord-amber); }
+    .feature-card:nth-child(4) .feature-icon { background: rgba(58, 168, 148, 0.14); color: var(--chord-teal); }
+    .feature-card:nth-child(5) .feature-icon { background: rgba(142, 68, 173, 0.12); color: var(--chord-purple); }
+    .feature-card:nth-child(6) .feature-icon { background: rgba(219, 63, 123, 0.12); color: var(--chord-rose); }
+
+    @media (max-width: 900px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .feature-grid { grid-template-columns: 1fr; } }
+
+    /* ---------- Personas (who it's for) ---------- */
+    .persona-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-5);
+    }
+    .persona {
+      border-left: 3px solid var(--chord-red);
+      padding: var(--sp-2) 0 var(--sp-2) var(--sp-5);
+    }
+    .persona:nth-child(2) { border-color: var(--chord-blue); }
+    .persona:nth-child(3) { border-color: var(--chord-amber); }
+    .persona h3 {
+      font-size: 20px; font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: var(--sp-2);
+    }
+    .persona p { color: var(--ink-700); font-size: 14px; }
+    .persona .quote {
+      margin-top: var(--sp-3); font-size: 14px; color: var(--ink-900);
+      font-style: italic;
+      border-top: 1px solid rgba(26, 26, 26, 0.08); padding-top: var(--sp-3);
+    }
+    @media (max-width: 760px) { .persona-grid { grid-template-columns: 1fr; } }
+
+    /* ---------- Tech pillars (dark) ---------- */
+    .tech-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sp-5);
+    }
+    .tech-item h3 {
+      font-size: 15px; font-weight: 700; color: #fff; margin-bottom: var(--sp-2);
+      display: inline-flex; align-items: center; gap: var(--sp-2);
+    }
+    .tech-item .num {
+      font-family: 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+      font-size: 11px; color: var(--chord-amber); font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+    .tech-item p { font-size: 14px; color: var(--ink-300); line-height: 1.55; }
+    @media (max-width: 880px) { .tech-grid { grid-template-columns: repeat(2, 1fr); gap: var(--sp-6); } }
+    @media (max-width: 480px) { .tech-grid { grid-template-columns: 1fr; } }
+
+    /* ---------- Final CTA ---------- */
+    .final-cta {
+      background: var(--wood-900);
+      color: #fff;
+      padding: var(--sp-10) 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .final-cta::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(600px circle at 30% 40%, rgba(192, 57, 43, 0.10), transparent 60%),
+        radial-gradient(500px circle at 70% 60%, rgba(46, 134, 193, 0.08), transparent 60%);
+      pointer-events: none;
+    }
+    .final-cta > .container { position: relative; z-index: 1; }
+    .final-cta h2 {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 700; letter-spacing: -0.035em; line-height: 1.0;
+      margin-bottom: var(--sp-4);
+      color: #fff;
+    }
+    .final-cta p {
+      font-size: 17px; color: var(--ink-300);
+      max-width: 560px; margin: 0 auto var(--sp-6);
+    }
+
+    /* ---------- Footer ---------- */
+    footer {
+      background: var(--ink-950);
+      color: var(--ink-500);
+      padding: var(--sp-7) 0 var(--sp-5);
+      font-size: 13px;
+    }
+    .footer-inner {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sp-4);
+    }
+    .footer-brand { display: inline-flex; align-items: center; gap: var(--sp-3); color: var(--ink-200); }
+    .footer-brand .brand-wm { color: var(--ink-200); }
+    .footer-links { display: inline-flex; gap: var(--sp-5); }
+    .footer-copy { font-size: 12px; color: var(--ink-500); margin-top: var(--sp-5); }
+
+    /* ---------- A11y: focus-visible everywhere ---------- */
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--chord-amber);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    /* ---------- sr-only utility ---------- */
+    .sr-only {
+      position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ========== NAV ========== -->
+<nav class="nav" aria-label="Navegación principal">
+  <div class="container nav-inner">
+    <a class="brand" href="#top" aria-label="Chord Lab — inicio">
+      <svg width="32" height="32" viewBox="0 0 64 64" aria-hidden="true">
+        <rect width="64" height="64" rx="12" fill="#1a1a1a"/>
+        <g stroke="#3a3a3a" stroke-width="1" stroke-linecap="round">
+          <path d="M12 12v44M20 12v44M28 12v44M36 12v44M44 12v44M52 12v44"/>
+          <path d="M8 24h48M8 40h48"/>
+        </g>
+        <rect x="8" y="10" width="48" height="2" rx="1" fill="#c8b896"/>
+        <circle cx="20" cy="32" r="6.5" fill="#c0392b"/>
+        <circle cx="36" cy="48" r="6.5" fill="#2e86c1"/>
+        <circle cx="52" cy="16" r="6.5" fill="#f39c12"/>
+      </svg>
+      <span class="brand-wm">CHORD LAB</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#demo">Demo</a>
+      <a href="#for-who">Para quién</a>
+      <a href="#tech">Tech</a>
+      <a class="nav-cta" href="../index.html">Abrir app <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</nav>
+
+<!-- ========== HERO ========== -->
+<section class="hero" id="top">
+  <div class="container hero-grid">
+    <div>
+      <div class="eyebrow">v1.0 · identificación en tiempo real</div>
+      <h1 class="hero-title">El laboratorio<br/>de <span class="accent">acordes</span>.</h1>
+      <p class="hero-sub">
+        Armás una posición en el diapasón. Chord Lab te devuelve el nombre, las inversiones drop-2,
+        las escalas compatibles y el sonido — en el navegador, sin registrarte, sin mandar una sola
+        request a un servidor.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="../index.html">
+          Abrir Chord Lab
+          <span aria-hidden="true">→</span>
+        </a>
+        <a class="btn btn-ghost" href="#demo">Ver demo</a>
+      </div>
+      <div class="hero-meta" aria-label="Métricas de producto">
+        <span><span class="dot"></span> 41 calidades · drop-2 · 37 escalas</span>
+        <span><span class="dot" style="background:var(--chord-blue)"></span> 65 KB gzipped</span>
+        <span><span class="dot" style="background:var(--chord-red)"></span> zero-backend</span>
+      </div>
+    </div>
+
+    <!-- Visual: a real fretboard fragment showing Cmaj7 (x-3-2-0-1-0) as a voicing.
+         Geometry:
+           nut at x=52, frets at x = 130, 200, 270, 340, 410
+           fret centers ≈ 91 (f1), 165 (f2), 235 (f3), 305 (f4), 375 (f5)
+           strings at y = 36 (hi-e), 64 (B), 92 (G), 120 (D), 148 (A), 176 (lo-E)
+    -->
+    <figure class="hero-visual" aria-label="Diapasón mostrando un voicing de Cmaj7">
+      <svg viewBox="0 0 460 220" xmlns="http://www.w3.org/2000/svg" role="img">
+        <title>Voicing de Cmaj7 en el diapasón</title>
+
+        <!-- background -->
+        <rect width="460" height="220" fill="#2a1a10" rx="8"/>
+
+        <!-- nut -->
+        <rect x="50" y="24" width="5" height="168" rx="1" fill="#c8b896"/>
+
+        <!-- frets -->
+        <g stroke="#4a3620" stroke-width="1">
+          <line x1="130" y1="24" x2="130" y2="192"/>
+          <line x1="200" y1="24" x2="200" y2="192"/>
+          <line x1="270" y1="24" x2="270" y2="192"/>
+          <line x1="340" y1="24" x2="340" y2="192"/>
+          <line x1="410" y1="24" x2="410" y2="192"/>
+        </g>
+
+        <!-- inlay on fret 3 -->
+        <circle cx="235" cy="108" r="3.5" fill="#6b553d"/>
+
+        <!-- string labels -->
+        <g fill="#8b7a5e" font-size="9" font-weight="600" font-family="system-ui">
+          <text x="30" y="40">e</text>
+          <text x="30" y="68">B</text>
+          <text x="30" y="96">G</text>
+          <text x="30" y="124">D</text>
+          <text x="30" y="152">A</text>
+          <text x="30" y="180">E</text>
+        </g>
+
+        <!-- strings (thinnest on top, fattest on bottom) -->
+        <g stroke="#8b7a5e" stroke-linecap="round">
+          <line x1="55" y1="36"  x2="450" y2="36"  stroke-width="1.0"/>
+          <line x1="55" y1="64"  x2="450" y2="64"  stroke-width="1.2"/>
+          <line x1="55" y1="92"  x2="450" y2="92"  stroke-width="1.4"/>
+          <line x1="55" y1="120" x2="450" y2="120" stroke-width="1.7"/>
+          <line x1="55" y1="148" x2="450" y2="148" stroke-width="2.0"/>
+          <line x1="55" y1="176" x2="450" y2="176" stroke-width="2.4"/>
+        </g>
+
+        <!-- Cmaj7 voicing: x-3-2-0-1-0
+             A string fret 3  = C (root)
+             D string fret 2  = E (3rd)
+             G string open    = G (5th)
+             B string fret 1  = C (root, octave up)
+             e string open    = E (3rd, octave up)
+             low E muted -->
+
+        <!-- muted low E -->
+        <text x="42" y="181" text-anchor="middle" font-size="14" font-weight="700" fill="#888">×</text>
+
+        <!-- open G (5) -->
+        <circle cx="42" cy="92" r="9" fill="none" stroke="#f39c12" stroke-width="2"/>
+        <!-- open e (3) -->
+        <circle cx="42" cy="36" r="9" fill="none" stroke="#2e86c1" stroke-width="2"/>
+
+        <!-- fret 1 B string = C (root, octave) -->
+        <circle class="hero-dot" cx="91" cy="64" r="14" fill="#c0392b"/>
+        <text x="91" y="68" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">C</text>
+
+        <!-- fret 2 D string = E (3) -->
+        <circle class="hero-dot" cx="165" cy="120" r="14" fill="#2e86c1"/>
+        <text x="165" y="124" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">E</text>
+
+        <!-- fret 3 A string = C (root) -->
+        <circle class="hero-dot" cx="235" cy="148" r="14" fill="#c0392b"/>
+        <text x="235" y="152" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">C</text>
+
+        <!-- floating chord-name badge, top-right -->
+        <g>
+          <rect x="320" y="30" width="120" height="54" rx="10" fill="#1a1a1a" opacity="0.88"/>
+          <text x="380" y="56" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="system-ui">Cmaj7</text>
+          <text x="380" y="72" text-anchor="middle" font-size="9" font-weight="600" fill="#f39c12" letter-spacing="1.4">MAYOR SÉPTIMA</text>
+        </g>
+      </svg>
+      <figcaption class="hero-visual-caption">
+        <span>identificado en tiempo real</span>
+        <span class="chord-badge">x · 3 · 2 · 0 · 1 · 0</span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ========== PILLARS STRIP ========== -->
+<section class="pillars" aria-label="Pilares de producto">
+  <div class="container pillar-grid">
+    <div class="pillar">
+      <h3><span class="pill-dot"></span>Instantáneo</h3>
+      <p>Identificación en <strong>menos de 1 ms</strong>. Sin spinners, sin latencia, sin esperas.</p>
+    </div>
+    <div class="pillar">
+      <h3><span class="pill-dot"></span>Completo</h3>
+      <p><strong>41 calidades</strong> · drop-2 · 37 escalas · audio Karplus-Strong · teoría correcta.</p>
+    </div>
+    <div class="pillar">
+      <h3><span class="pill-dot"></span>Privado</h3>
+      <p>Todo corre en tu navegador. <strong>Cero servidores</strong>. Tus progresiones no viajan.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FEATURES ========== -->
+<section class="section" id="features">
+  <div class="container">
+    <header class="section-head">
+      <div class="section-eyebrow">Qué hace</div>
+      <h2 class="section-title">Seis cosas que otros diccionarios de acordes no hacen.</h2>
+      <p class="section-lede">
+        Chord Lab no es un catálogo estático. Es un motor que analiza lo que estás tocando y devuelve
+        teoría accionable al instante.
+      </p>
+    </header>
+
+    <div class="feature-grid">
+      <article class="feature-card">
+        <span class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 6h16M4 12h10M4 18h16"/>
+            <circle cx="20" cy="12" r="2" fill="currentColor"/>
+          </svg>
+        </span>
+        <h3>Identificación bidireccional</h3>
+        <p>Pisás un acorde → nombre. Escribís el nombre → digitación. Las dos direcciones funcionan.</p>
+      </article>
+
+      <article class="feature-card">
+        <span class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 17l6-6 4 4 8-8"/>
+            <path d="M14 7h7v7"/>
+          </svg>
+        </span>
+        <h3>Inversiones drop-2 nombradas</h3>
+        <p>Cmaj7 con bajo en E se llama <strong>Cmaj7/E</strong>, no "acorde raro". Teoría correcta.</p>
+      </article>
+
+      <article class="feature-card">
+        <span class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="8" width="18" height="12" rx="2"/>
+            <rect x="6" y="4" width="12" height="8" rx="1.5" fill="currentColor" fill-opacity="0.15"/>
+          </svg>
+        </span>
+        <h3>Voicings apilables</h3>
+        <p>Superponé varias digitaciones del mismo acorde en el diapasón con colores distintos.</p>
+      </article>
+
+      <article class="feature-card">
+        <span class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12c2-6 5-6 6 0s4 6 6 0 4-6 6 0"/>
+          </svg>
+        </span>
+        <h3>Escalas compatibles</h3>
+        <p>Sobre cada acorde te sugiero 3-5 escalas que funcionan, con un click para superponer.</p>
+      </article>
+
+      <article class="feature-card">
+        <span class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="8,5 19,12 8,19" fill="currentColor" fill-opacity="0.15"/>
+            <polygon points="8,5 19,12 8,19"/>
+          </svg>
+        </span>
+        <h3>Audio Karplus-Strong</h3>
+        <p>Síntesis de cuerda pulsada en tiempo real. Rasgueo, arpegio o nota individual.</p>
+      </article>
+
+      <article class="feature-card">
+        <span class="feature-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 00-7.07-7.07l-1 1"/>
+            <path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 007.07 7.07l1-1"/>
+          </svg>
+        </span>
+        <h3>Links compartibles</h3>
+        <p>La URL codifica el voicing exacto. Copiás el link, lo pegás, aparece el mismo acorde.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ========== DEMO ========== -->
+<section class="section" id="demo" style="background: var(--ink-100);">
+  <div class="container">
+    <header class="section-head">
+      <div class="section-eyebrow">Cómo se ve</div>
+      <h2 class="section-title">Del traste al nombre, en un click.</h2>
+      <p class="section-lede">
+        Una sola pantalla. Todo visible a la vez. Sin menús escondidos, sin modales, sin tutoriales de 20 minutos.
+      </p>
+    </header>
+
+    <figure style="background:#2a1a10; padding:24px; border-radius:var(--r-xl); box-shadow: var(--shadow-card);">
+      <svg viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Captura del diapasón con un acorde identificado">
+        <title>Demo: Cmaj7 identificado en el diapasón</title>
+        <rect width="800" height="280" fill="#2a1a10" rx="8"/>
+
+        <!-- nut -->
+        <rect x="70" y="34" width="6" height="212" fill="#c8b896" rx="1"/>
+        <!-- frets -->
+        <g stroke="#4a3620" stroke-width="1">
+          <line x1="180" y1="34" x2="180" y2="246"/>
+          <line x1="290" y1="34" x2="290" y2="246"/>
+          <line x1="400" y1="34" x2="400" y2="246"/>
+          <line x1="510" y1="34" x2="510" y2="246"/>
+          <line x1="620" y1="34" x2="620" y2="246"/>
+          <line x1="730" y1="34" x2="730" y2="246"/>
+        </g>
+        <!-- inlays -->
+        <circle cx="345" cy="140" r="4" fill="#6b553d"/>
+        <circle cx="565" cy="140" r="4" fill="#6b553d"/>
+        <!-- string labels (left) -->
+        <g fill="#c8b896" font-size="11" font-family="system-ui" font-weight="600">
+          <text x="40" y="55">E</text>
+          <text x="40" y="88">B</text>
+          <text x="40" y="120">G</text>
+          <text x="40" y="152">D</text>
+          <text x="40" y="184">A</text>
+          <text x="40" y="216">E</text>
+        </g>
+        <!-- strings -->
+        <g stroke="#8b7a5e" stroke-linecap="round">
+          <line x1="76" y1="50"  x2="780" y2="50"  stroke-width="1.0"/>
+          <line x1="76" y1="84"  x2="780" y2="84"  stroke-width="1.2"/>
+          <line x1="76" y1="116" x2="780" y2="116" stroke-width="1.4"/>
+          <line x1="76" y1="148" x2="780" y2="148" stroke-width="1.7"/>
+          <line x1="76" y1="180" x2="780" y2="180" stroke-width="2.0"/>
+          <line x1="76" y1="212" x2="780" y2="212" stroke-width="2.4"/>
+        </g>
+
+        <!-- Open E string: outlined ring at nut, hi-E (y=50) -->
+        <circle cx="52" cy="50" r="11" fill="none" stroke="#4ade80" stroke-width="2"/>
+        <text x="52" y="54" text-anchor="middle" font-size="10" font-weight="700" fill="#4ade80">O</text>
+
+        <!-- Open G string (y=116) -->
+        <circle cx="52" cy="116" r="11" fill="none" stroke="#4ade80" stroke-width="2"/>
+        <text x="52" y="120" text-anchor="middle" font-size="10" font-weight="700" fill="#4ade80">O</text>
+
+        <!-- Fret 1 on B string: C = root (fret 1 center ≈ 128) -->
+        <circle cx="128" cy="84" r="16" fill="#c0392b"/>
+        <text x="128" y="89" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">C</text>
+
+        <!-- Fret 2 on D string: E = 3 (fret 2 center ≈ 235) -->
+        <circle cx="235" cy="148" r="16" fill="#2e86c1"/>
+        <text x="235" y="153" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">E</text>
+
+        <!-- Fret 3 on A string: C = root (double, octave below) — fret 3 center ≈ 345 -->
+        <circle cx="345" cy="180" r="16" fill="#c0392b"/>
+        <text x="345" y="185" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">C</text>
+
+        <!-- Muted low E (x on left) -->
+        <text x="52" y="217" text-anchor="middle" font-size="14" font-weight="700" fill="#888">×</text>
+
+        <!-- Chord-name badge top right -->
+        <g>
+          <rect x="620" y="42" width="160" height="64" rx="10" fill="#1a1a1a" opacity="0.85"/>
+          <text x="700" y="74" text-anchor="middle" font-size="26" font-weight="700" fill="#fff" font-family="system-ui">Cmaj7</text>
+          <text x="700" y="94" text-anchor="middle" font-size="11" font-weight="600" fill="#f39c12" letter-spacing="1">MAYOR SÉPTIMA</text>
+        </g>
+      </svg>
+      <figcaption class="hero-visual-caption" style="margin-top:16px;">
+        <span>Vista principal · acorde identificado en vivo</span>
+        <span class="chord-badge">x · 3 · 2 · 0 · 1 · 0</span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ========== PERSONAS ========== -->
+<section class="section" id="for-who">
+  <div class="container">
+    <header class="section-head">
+      <div class="section-eyebrow">Para quién</div>
+      <h2 class="section-title">Si ya sabés pisar, Chord Lab te da el <em>porqué</em>.</h2>
+      <p class="section-lede">
+        Asumimos que no necesitás un tutorial de "cómo tocar Do mayor". Asumimos que querés entender qué estás
+        tocando y por qué suena como suena.
+      </p>
+    </header>
+
+    <div class="persona-grid">
+      <div class="persona">
+        <h3>Estudiantes</h3>
+        <p>De armonía, de guitarra jazz, de arreglo. Entendés qué grados estás tocando y por qué.</p>
+        <p class="quote">"Antes copiaba voicings de YouTube sin saber qué eran. Ahora sé que ese Dm7/F es el segundo grado en primera inversión."</p>
+      </div>
+      <div class="persona">
+        <h3>Docentes</h3>
+        <p>Mostrás inversiones, tensiones y escalas compatibles sin pizarrón. Pantalla compartida y listo.</p>
+        <p class="quote">"Le paso el link a mis alumnos. Cada uno ve exactamente el voicing del que estamos hablando."</p>
+      </div>
+      <div class="persona">
+        <h3>Productores</h3>
+        <p>Chequeás armonías rápido, probás sustituciones, comparás tres voicings apilados en 10 segundos.</p>
+        <p class="quote">"Lo uso al lado del DAW. Si escucho algo que no identifico, lo armo acá y me dice qué es."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== TECH ========== -->
+<section class="section section-dark" id="tech">
+  <div class="container">
+    <header class="section-head">
+      <div class="section-eyebrow">Fundamentos técnicos</div>
+      <h2 class="section-title">Ingeniería que se nota al usar.</h2>
+      <p class="section-lede">
+        No es un wrapper de una librería de música. Es un motor propio en TypeScript, tipado, testeado,
+        y diseñado para vivir en un solo archivo.
+      </p>
+    </header>
+
+    <div class="tech-grid">
+      <div class="tech-item">
+        <h3><span class="num">01</span> Client-side puro</h3>
+        <p>Toda la identificación ocurre en tu navegador. No hay endpoints, no hay tracking, no hay cuenta.</p>
+      </div>
+      <div class="tech-item">
+        <h3><span class="num">02</span> Single-file HTML</h3>
+        <p>La app entera pesa <strong>65 KB</strong> gzipped — un archivo. Descargá, guardá, funciona offline.</p>
+      </div>
+      <div class="tech-item">
+        <h3><span class="num">03</span> Motor propio</h3>
+        <p>Identificación en dos pasadas (estricta + relajada), inversiones drop-2, naming académicamente correcto.</p>
+      </div>
+      <div class="tech-item">
+        <h3><span class="num">04</span> 696 tests</h3>
+        <p>Cada calidad, cada inversión, cada escala cubierta. Sin romper nada entre releases.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FINAL CTA ========== -->
+<section class="final-cta">
+  <div class="container">
+    <h2>Abrí Chord Lab.<br/>Pulsá tres trastes.</h2>
+    <p>En menos de diez segundos vas a saber qué acorde tocaste, cómo se llaman sus inversiones, y qué escalas le van.</p>
+    <a class="btn btn-primary" href="../index.html" style="font-size:16px; padding:18px 28px;">
+      Abrir Chord Lab
+      <span aria-hidden="true">→</span>
+    </a>
+  </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
+          <rect width="64" height="64" rx="12" fill="#1a1a1a"/>
+          <rect x="8" y="10" width="48" height="2" rx="1" fill="#c8b896"/>
+          <circle cx="20" cy="32" r="6.5" fill="#c0392b"/>
+          <circle cx="36" cy="48" r="6.5" fill="#2e86c1"/>
+          <circle cx="52" cy="16" r="6.5" fill="#f39c12"/>
+        </svg>
+        <span class="brand-wm">CHORD LAB</span>
+      </div>
+      <nav class="footer-links" aria-label="Enlaces del pie">
+        <a href="../index.html">Abrir app</a>
+        <a href="#features">Features</a>
+        <a href="#tech">Tech</a>
+      </nav>
+    </div>
+    <div class="footer-copy">
+      Hecho en el navegador · sin servidores · © 2026 Chord Lab.
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

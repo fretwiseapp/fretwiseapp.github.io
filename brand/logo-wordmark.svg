@@ -1,0 +1,7 @@
+<!-- Chord Lab — Wordmark only.
+     Use when the mark already appears separately (e.g., in a masthead with the icon elsewhere). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 40" role="img" aria-label="Chord Lab">
+  <title>Chord Lab</title>
+  <text x="0" y="30" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', Inter, system-ui, sans-serif"
+        font-size="28" font-weight="700" letter-spacing="3.9" fill="#1a1a1a">CHORD LAB</text>
+</svg>
