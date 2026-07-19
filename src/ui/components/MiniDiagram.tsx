@@ -18,7 +18,7 @@ export function MiniDiagram({ strings, tuning = STANDARD }: MiniDiagramProps) {
 
   const elements: React.ReactNode[] = [
     <rect key="bg" x={padL} y={padT} width={fs * 4} height={ss * 5} fill="#3d2418" />,
-    <rect key="nut" x={padL - 2} y={padT - 1} width={2} height={ss * 5 + 2} fill={startFret === 1 ? '#f0ead8' : '#a89878'} />,
+    <rect key="nut" x={padL - 2} y={padT - 1} width={2} height={ss * 5 + 2} fill={startFret === 1 ? '#e8e8e8' : '#6a6a6a'} />,
   ];
 
   for (let f = 1; f <= 4; f++) {

@@ -10,33 +10,43 @@
  *      on the fretboard to visually distinguish each voicing from the others.
  */
 
-/** By pitch class (0..11). C=red, D=orange, E=yellow, ..., B=violet. */
+/**
+ * By pitch class (0..11). A modernized, cooler chromatic wheel — 12 hues must stay
+ * distinct for the fretboard to be readable, so this can't collapse into a single
+ * indigo ramp. It is retuned to harmonize with the brand: muted, contemporary stops,
+ * anchored on the brand indigo at G#/Ab.
+ */
 export const NOTE_COLORS: readonly string[] = [
-  '#e63946', // C   red
-  '#f47b3a', // C#/Db   red-orange
-  '#f4a93a', // D   orange
-  '#e5c82a', // D#/Eb   gold
-  '#b6d64a', // E   yellow-green
-  '#6ac04a', // F   green
-  '#3aa894', // F#/Gb   teal
-  '#2e86c1', // G   blue
-  '#5e5ccd', // G#/Ab   indigo
-  '#8e44ad', // A   purple
-  '#c04198', // A#/Bb   magenta
-  '#db3f7b', // B   rose
+  '#ef4444', // C   red
+  '#f97316', // C#/Db   orange
+  '#f59e0b', // D   amber
+  '#eab308', // D#/Eb   yellow
+  '#84cc16', // E   lime
+  '#22c55e', // F   green
+  '#14b8a6', // F#/Gb   teal
+  '#06b6d4', // G   cyan
+  '#635bff', // G#/Ab   indigo (brand anchor)
+  '#8b5cf6', // A   violet
+  '#a855f7', // A#/Bb   purple
+  '#ec4899', // B   pink
 ];
 
-/** By chord degree string. Each degree has a fixed color regardless of which key. */
+/**
+ * By chord degree string. Each degree has a fixed color regardless of key.
+ * Indigo semantic field: a cohesive cool ramp anchored on the brand indigo (root),
+ * spaced by hue + lightness so degrees stay distinguishable.
+ *   1 indigo · 3 blue · 5 cyan · 9 violet · 11 teal · 6/13 periwinkle · 7 slate
+ */
 export const DEGREE_COLORS: Readonly<Record<string, string>> = {
-  '1':   '#c0392b', // root — deep red
-  'b9':  '#9b5eb0', '9':  '#7d3c98', '#9': '#5e3370',   // 9 family — purples
-  'b3':  '#1f618d', '3':  '#2e86c1', // 3 family — blues
-  '11':  '#16a085', '#11': '#117a65', 'b5': '#117a65',  // 4/11 family — teal
-  '5':   '#f39c12', // 5 — amber
-  '#5':  '#d35400', 'b13': '#d35400',                   // #5/b13 — burnt orange
-  '6':   '#d68910', '13':  '#b9770e',                   // 6/13 — mustard
-  'b7':  '#7f8c8d', 'bb7': '#566573',                   // 7-family — greys
-  '7':   '#34495e',
+  '1':   '#635bff', // root — brand indigo
+  'b9':  '#a78bfa', '9':  '#8b5cf6', '#9': '#7c3aed',   // 9 family — violet
+  'b3':  '#2563eb', '3':  '#3b82f6', // 3 family — blue
+  '11':  '#14b8a6', '#11': '#0d9488', 'b5': '#0d9488',  // 4/11 family — teal
+  '5':   '#22d3ee', // 5 — cyan
+  '#5':  '#06b6d4', 'b13': '#06b6d4',                   // #5/b13 — deep cyan
+  '6':   '#818cf8', '13':  '#6366f1',                   // 6/13 — periwinkle
+  'b7':  '#64748b', 'bb7': '#94a3b8',                   // 7-family — slate
+  '7':   '#475569',
 };
 
 /**
@@ -52,7 +62,7 @@ export const VOICING_COLORS: readonly string[] = [
 ];
 
 /** Color for the root-note highlight in degree mode (kept separate for UI contrast). */
-export const ROOT_HIGHLIGHT = '#f59e0b';
+export const ROOT_HIGHLIGHT = '#c7d2fe';
 
 /** Get color for a pitch class. Handles out-of-range defensively. */
 export function colorForNote(pc: number): string {

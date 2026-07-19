@@ -74,16 +74,16 @@ export const Fretboard = memo(function Fretboard(props: FretboardProps) {
   const inChord = view === 'chord';
 
   const elements: React.ReactNode[] = [
-    <rect key="bg" x={padL} y={padT} width={bw} height={bh} fill="#3d2418" />,
-    <rect key="nut" x={padL - 5} y={padT - 2} width={5} height={bh + 4} fill="#f0ead8" />,
+    <rect key="bg" x={padL} y={padT} width={bw} height={bh} fill="#0d0d0d" />,
+    <rect key="nut" x={padL - 5} y={padT - 2} width={5} height={bh + 4} fill="#e8e8e8" />,
   ];
 
   // Frets + fret numbers
   for (let f = 1; f <= FRET_COUNT; f++) {
     const x = padL + f * fs;
     elements.push(
-      <rect key={`fret-${f}`} x={x - 1} y={padT} width={2} height={bh} fill="#c0c0c4" />,
-      <text key={`fnum-${f}`} x={x - fs / 2} y={H - 10} textAnchor="middle" fontSize={10} fill="#a89878">{f}</text>
+      <rect key={`fret-${f}`} x={x - 1} y={padT} width={2} height={bh} fill="#4a4a4a" />,
+      <text key={`fnum-${f}`} x={x - fs / 2} y={H - 10} textAnchor="middle" fontSize={10} fill="#6a6a6a">{f}</text>
     );
   }
   // Dot inlays — Gibson/Fender convention: single dots on 3, 5, 7, 9, 15, 17,
@@ -92,14 +92,14 @@ export const Fretboard = memo(function Fretboard(props: FretboardProps) {
   const DOUBLE_INLAYS = [12, 21];
   for (const f of SINGLE_INLAYS) {
     if (f > FRET_COUNT) continue;
-    elements.push(<circle key={`inlay-${f}`} cx={padL + f * fs - fs / 2} cy={padT + bh / 2} r={4} fill="#d4c8a8" />);
+    elements.push(<circle key={`inlay-${f}`} cx={padL + f * fs - fs / 2} cy={padT + bh / 2} r={4} fill="#3a3a3a" />);
   }
   for (const f of DOUBLE_INLAYS) {
     if (f > FRET_COUNT) continue;
     const cx = padL + f * fs - fs / 2;
     elements.push(
-      <circle key={`inlay-${f}-top`} cx={cx} cy={padT + ss * 1.3} r={4} fill="#d4c8a8" />,
-      <circle key={`inlay-${f}-bot`} cx={cx} cy={padT + ss * 3.7} r={4} fill="#d4c8a8" />,
+      <circle key={`inlay-${f}-top`} cx={cx} cy={padT + ss * 1.3} r={4} fill="#3a3a3a" />,
+      <circle key={`inlay-${f}-bot`} cx={cx} cy={padT + ss * 3.7} r={4} fill="#3a3a3a" />,
     );
   }
 
@@ -148,7 +148,7 @@ export const Fretboard = memo(function Fretboard(props: FretboardProps) {
     const row = 5 - st;
     const y = padT + row * ss;
     const thick = st < 3 ? 1.8 - st * 0.3 : 0.9 - (st - 3) * 0.15;
-    const colStr = st < 3 ? '#c8a06a' : '#e0e0e4';
+    const colStr = st < 3 ? '#6a6a6a' : '#8a8a8a';
     elements.push(<line key={`str-${st}`} x1={padL} y1={y} x2={W - padR} y2={y} stroke={colStr} strokeWidth={thick} />);
 
     const openPc = tuning[st]! % 12;
@@ -156,7 +156,7 @@ export const Fretboard = memo(function Fretboard(props: FretboardProps) {
       ? deg((openPc - current.root + 12) % 12, qSym)
       : SHARP[openPc]!;
     elements.push(
-      <text key={`open-${st}`} x={15} y={y + 4} textAnchor="middle" fontSize={11} fill="#c8b896" fontWeight={600}>{openLbl}</text>
+      <text key={`open-${st}`} x={15} y={y + 4} textAnchor="middle" fontSize={11} fill="#8a8a8a" fontWeight={600}>{openLbl}</text>
     );
 
     if (inChord) {
@@ -164,21 +164,21 @@ export const Fretboard = memo(function Fretboard(props: FretboardProps) {
       if (v === 'muted') {
         elements.push(
           <g key={`sm-${st}`} style={{ cursor: 'pointer' }} onClick={() => onStringStateClick(st)}>
-            <circle cx={padL - 18} cy={y} r={7} fill="#1a0e08" stroke="#555" />
-            <text x={padL - 18} y={y + 3} textAnchor="middle" fontSize={10} fill="#a88" fontWeight={700}>×</text>
+            <circle cx={padL - 18} cy={y} r={7} fill="#161616" stroke="#555" />
+            <text x={padL - 18} y={y + 3} textAnchor="middle" fontSize={10} fill="#8a8a8a" fontWeight={700}>×</text>
           </g>
         );
       } else if (v === 0) {
         elements.push(
           <g key={`sm-${st}`} style={{ cursor: 'pointer' }} onClick={() => onStringStateClick(st)}>
-            <circle cx={padL - 18} cy={y} r={7} fill="#2d6a3e" stroke="#4ade80" strokeWidth={1.3} />
-            <text x={padL - 18} y={y + 3} textAnchor="middle" fontSize={9} fill="#d0f8d8" fontWeight={700}>O</text>
+            <circle cx={padL - 18} cy={y} r={7} fill="rgba(255,255,255,0.06)" stroke="#8a8a8a" strokeWidth={1.3} />
+            <text x={padL - 18} y={y + 3} textAnchor="middle" fontSize={9} fill="#e0e0e0" fontWeight={700}>O</text>
           </g>
         );
       } else {
         elements.push(
           <g key={`sm-${st}`} style={{ cursor: 'pointer' }} onClick={() => onStringStateClick(st)}>
-            <circle cx={padL - 18} cy={y} r={6} fill="rgba(255,255,255,0.05)" stroke="#6a5a48" strokeDasharray="2 2" />
+            <circle cx={padL - 18} cy={y} r={6} fill="rgba(255,255,255,0.05)" stroke="#5a5a5a" strokeDasharray="2 2" />
           </g>
         );
       }
@@ -227,7 +227,7 @@ export const Fretboard = memo(function Fretboard(props: FretboardProps) {
           dotColor = dotColorFor(pc);
           dotLbl = displayMode === 'deg' ? deg((pc - (cRoot ?? 0) + 12) % 12, qSym) : spell(pc, key, qSym);
         } else {
-          dotColor = '#4a8a4a';
+          dotColor = '#71717a';
           small = true;
           dotLbl = displayMode === 'deg' ? degOfScale(pc, scaleRoot, scaleName) : spell(pc, key);
         }
