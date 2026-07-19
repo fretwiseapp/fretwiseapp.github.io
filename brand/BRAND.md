@@ -31,8 +31,8 @@ Frente a competidores (Chordify, Oolimo, ChordFinder), Fretwise compite por **pr
 ## 2. Nombre y tagline
 
 ### 2.1 Nombre
-**Fretwise** (una palabra, mayúscula inicial en prosa, VERSALES en logo: FRETWISE).
-Nunca: *Fret Wise*, *FretWise*, *fret-wise*, *Fretwize*. En código/URLs/slug: `fretwise`.
+**Fretwise** (una palabra, mayúscula inicial en prosa; en el logo va en **minúscula itálica**: *fretwise*).
+Nunca: *Fret Wise*, *FretWise*, *fret-wise*, *Fretwize*, ni en VERSALES. En código/URLs/slug: `fretwise`.
 
 ### 2.2 Tagline principal
 > **El laboratorio de acordes.**
@@ -111,10 +111,12 @@ Hablamos en español rioplatense cuando el contexto es informal (ej. UI conversa
 
 ### 4.1 Anatomía
 
-El logo de Fretwise está compuesto por:
+El logo de Fretwise es **monocromo (blanco y negro)**. Se compone de:
 
-1. **El símbolo (mark)** — un cuadrado redondeado que representa un fragmento de diapasón con 3 puntos de colores: rojo (fundamental), azul (3ra) y ámbar (5ta). Los 3 colores son **sagrados**: son los mismos que usa la app para identificar grados.
-2. **El wordmark** — "FRETWISE" en caja alta, tracking ancho (+0.08em), peso 700.
+1. **El símbolo (mark)** — un cuadrado redondeado negro (`#111`) que representa un fragmento de diapasón: 3 cuerdas y 3 puntos que suben en diagonal (un voicing leído de grave a agudo — la lectura "sabia/ascendente" del nombre *fretwise*). El **punto más grave = la raíz**, y va en el **acento índigo `#635BFF`**; los otros dos son blancos. Es el único color de la marca.
+2. **El wordmark** — *fretwise* en **minúscula itálica**, Inter peso 500, tinta `#111`.
+
+> **Marca monocroma + un acento, producto en color.** El logo es B/N con un solo pop de índigo en la nota raíz (herramienta fina, seria, memorable). Los colores rojo/azul/ámbar **no viven en la marca**, pero **siguen dentro de la app** porque ahí son funcionales: codifican grados (1 = rojo, 3 = azul, 5 = ámbar) y sostienen la memoria muscular visual. El índigo de marca es distinto a propósito: no colisiona con los colores de grado del producto. Color = información, no decoración.
 
 ### 4.2 Variantes
 
@@ -134,15 +136,13 @@ El logo de Fretwise está compuesto por:
 ### 4.4 Reglas de uso
 
 ✅ **Permitido**
-- Sobre fondo `--cream-50` (#fafaf7) o `--ink-950` (#0e0e10).
+- Sobre fondo blanco (`#ffffff`) o negro (`#0d0d0d` / `#111`).
 - Sobre fotos siempre que haya un scrim del 40%+ de contraste.
-- Sobre `--wood-900` (#2a1a10) — es nuestro fondo secundario por excelencia.
 
 ❌ **Prohibido**
-- Cambiar los colores de los 3 puntos.
+- Colorear el mark o los puntos (la marca es monocroma; el color vive en la app, no en el logo).
 - Rotar, inclinar, estirar o aplicar efectos (sombras, gradientes, outlines).
-- Reemplazar el wordmark por otra fuente.
-- Usar sobre fondos con hue cercano al rojo #c0392b (conflicto visual con el dot de fundamental).
+- Reemplazar el wordmark por otra fuente que no sea Inter.
 
 ---
 
@@ -163,6 +163,12 @@ Los colores viven como **tokens semánticos**, no como valores crudos. Esto deja
 | `--ink-200` | `#e8e6e0` | Bordes suaves, texto primario en dark |
 | `--ink-100` | `#f5f2ea` | Fondos sutiles |
 | `--cream-50` | `#fafaf7` | Fondo de página principal (light) |
+
+#### Acento de marca
+| Token | Hex | Uso |
+|---|---|---|
+| `--accent` | `#635BFF` | Índigo. El único color de la marca: CTA de marketing, links, foco de inputs, nota raíz del logo. Elegido para NO chocar con los colores de grado de la app. |
+| `--accent-600` | `#4f47e6` | Texto/borde acento sobre fondo claro (mejor contraste). |
 
 #### Signature (madera del diapasón)
 | Token | Hex | Uso |
@@ -189,7 +195,7 @@ Los colores viven como **tokens semánticos**, no como valores crudos. Esto deja
 ### 5.2 Reglas de combinación
 
 - **Texto sobre `--wood-900`**: usar `--ink-200` (#e8e6e0) o más claro. Nunca gris medio.
-- **CTA primario**: siempre `--chord-red` fondo + `#ffffff` texto. No negociable.
+- **CTA primario (marketing/marca)**: fondo acento índigo `--accent` (#635BFF) + texto `#ffffff`. (Dentro de la app, la acción musical primaria sigue en `--chord-red`, que ahí significa fundamental.)
 - **Combinaciones prohibidas**: `--chord-red` sobre `--chord-amber` (vibra feo), `--chord-blue` sobre `--chord-purple` (bajo contraste).
 
 ---
@@ -198,12 +204,13 @@ Los colores viven como **tokens semánticos**, no como valores crudos. Esto deja
 
 ### 6.1 Familia
 
-**Una sola familia**: el system stack nativo del dispositivo. Es veloz, se siente nativo, no requiere fetches externos, y es parte del credo *single-file* de Fretwise.
+**Marketing (landing, sitio): Inter.** Grotesca neutra, estándar de facto del software serio (Linear, Vercel). Da el registro "business/herramienta fina" que buscamos. Se sirve vía **Bunny Fonts** (gratis, sin tracking — coherente con el valor de privacidad), no Google Fonts.
 
 ```css
-font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter',
-             system-ui, 'Segoe UI', sans-serif;
+font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 ```
+
+**Producto (la app single-file): system stack.** La app no hace un solo fetch externo por credo; usa la fuente nativa del dispositivo (en Win11, Segoe UI Variable; en macOS, SF Pro). Inter queda como primera opción por si está instalada, con fallback al sistema.
 
 Para código y voicings, monospace:
 ```css

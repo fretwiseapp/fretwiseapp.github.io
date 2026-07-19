@@ -21,10 +21,15 @@
   --wood-700: #4a2e1a;
   --wood-accent: #c8b896;
 
-  /* The three sacred chord colors */
-  --chord-red: #c0392b;   /* 1 — root */
-  --chord-blue: #2e86c1;  /* 3 — major third */
-  --chord-amber: #f39c12; /* 5 — perfect fifth */
+  /* Core degree colors (indigo semantic field — see theme.ts). Names kept for
+     back-compat; values now: 1 = brand indigo, 3 = blue, 5 = cyan. */
+  --chord-red: #635bff;   /* 1 — root (brand indigo) */
+  --chord-blue: #3b82f6;  /* 3 — major third (blue) */
+  --chord-amber: #22d3ee; /* 5 — perfect fifth (cyan) */
+
+  /* Brand accent (indigo) — CTA, focus, links */
+  --accent: #635bff;
+  --accent-600: #4f47e6;
 
   /* Radii — brand scale */
   --r-sm: 6px;
@@ -36,52 +41,52 @@
   /* Motion */
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  /* Surfaces */
-  --bg-page: #fafaf7;
+  /* Surfaces (cool, monochrome — matches landing) */
+  --bg-page: #f7f7f6;
   --bg-card: #ffffff;
-  --bg-card-hover: #f0ede5;
-  --bg-subtle: #f5f2ea;
+  --bg-card-hover: #efeff1;
+  --bg-subtle: #f2f2f3;
   --bg-input: #ffffff;
 
-  /* Borders */
-  --border-default: #e0ddd5;
-  --border-soft: #e8e6e0;
-  --border-hairline: #eee;
-  --border-hairline-soft: #f2f2ef;
+  /* Borders (cool hairlines) */
+  --border-default: #e3e3e6;
+  --border-soft: #ececee;
+  --border-hairline: #f0f0f2;
+  --border-hairline-soft: #f5f5f7;
 
-  /* Text */
-  --text-primary: #1a1a1a;
-  --text-secondary: #444;
-  --text-tertiary: #666;
-  --text-muted: #888;
-  --text-faint: #aaa;
+  /* Text (near-black, neutral) */
+  --text-primary: #111111;
+  --text-secondary: #4a4a4a;
+  --text-tertiary: #6a6a6a;
+  --text-muted: #8a8a8a;
+  --text-faint: #b0b0b0;
 
-  /* Accents (primary dark button) */
-  --accent-bg: #1a1a1a;
+  /* Accents (primary button = brand indigo, like landing CTA) */
+  --accent-bg: #635bff;
   --accent-fg: #ffffff;
 
-  /* Brand red (constant across themes) */
-  --brand-red: #c0392b;
-  --brand-red-soft: #fff5f3;
+  /* Brand accent constant (root chip, focus, voicing accents) — was "red", now indigo */
+  --brand-red: #635bff;
+  --brand-red-soft: #eef0ff;
 
-  /* Stage (wooden fretboard) — stays dark in both modes */
-  --stage-bg: #2a1a10;
-  --stage-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --stage-string-text: #c8b896;
+  /* Stage (fretboard) — monochrome dark in both modes, like landing */
+  --stage-bg: #0d0d0d;
+  --stage-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
+  --stage-string-text: #6a6a6a;
   --stage-string-btn-bg: rgba(255, 255, 255, 0.08);
   --stage-string-btn-border: rgba(255, 255, 255, 0.2);
-  --stage-string-btn-fg: #e8dcc0;
+  --stage-string-btn-fg: #d4d4d4;
   --stage-string-muted-bg: rgba(0, 0, 0, 0.3);
   --stage-string-muted-fg: #888;
-  --stage-string-open-bg: #2d6a3e;
-  --stage-string-open-border: #4ade80;
-  --stage-string-open-fg: #d0f8d8;
+  --stage-string-open-bg: rgba(255, 255, 255, 0.06);
+  --stage-string-open-border: #8a8a8a;
+  --stage-string-open-fg: #e0e0e0;
 
   /* Panels */
-  --panel-analysis-bg: #fff8e8;
-  --panel-analysis-border: #f0dfa8;
-  --panel-analysis-heading: #8b6914;
-  --panel-analysis-body: #5a4a2a;
+  --panel-analysis-bg: #eef0ff;
+  --panel-analysis-border: #d5d8f5;
+  --panel-analysis-heading: #4338ca;
+  --panel-analysis-body: #3a3a5a;
 
   --panel-warn-bg: #fff0e0;
   --panel-warn-border: #f5c8a0;
@@ -93,20 +98,20 @@
   --chip-root-fg: #ffffff;
   --chip-root-deg: rgba(255, 255, 255, 0.7);
 
-  --chip-tension-bg: #fdf0d0;
-  --chip-tension-border: #d4a028;
-  --chip-tension-fg: #7a5210;
-  --chip-tension-deg: #a47a18;
+  --chip-tension-bg: #f0ecfe;
+  --chip-tension-border: #a78bfa;
+  --chip-tension-fg: #5b21b6;
+  --chip-tension-deg: #7c3aed;
 
-  --chip-alt-bg: #e4efd4;
-  --chip-alt-border: #7a9a4a;
-  --chip-alt-fg: #405028;
-  --chip-alt-deg: #6a8a3a;
+  --chip-alt-bg: #e6f6f3;
+  --chip-alt-border: #5eccb0;
+  --chip-alt-fg: #0f5d51;
+  --chip-alt-deg: #0d9488;
 
-  --scale-sugg-bg: #f0f5e8;
-  --scale-sugg-border: #c8d8c0;
-  --scale-sugg-fg: #3a5020;
-  --scale-sugg-hover-bg: #3a5020;
+  --scale-sugg-bg: #eef0ff;
+  --scale-sugg-border: #cdd2f5;
+  --scale-sugg-fg: #4338ca;
+  --scale-sugg-hover-bg: #4f47e6;
   --scale-sugg-hover-fg: #ffffff;
 
   /* Shadows — brand scale (softer near-field + a longer drop) */
@@ -120,55 +125,56 @@
 
 /* ----- Dark theme overrides ----- */
 [data-theme='dark'] {
-  --bg-page: #0e0e10;
-  --bg-card: #1a1a1d;
-  --bg-card-hover: #26262c;
-  --bg-subtle: #23232a;
-  --bg-input: #23232a;
+  --bg-page: #0a0a0b;
+  --bg-card: #161618;
+  --bg-card-hover: #202024;
+  --bg-subtle: #1c1c20;
+  --bg-input: #1c1c20;
 
-  --border-default: #33333c;
-  --border-soft: #2a2a32;
-  --border-hairline: #2a2a32;
-  --border-hairline-soft: #22222a;
+  --border-default: #2e2e36;
+  --border-soft: #26262c;
+  --border-hairline: #26262c;
+  --border-hairline-soft: #1f1f24;
 
-  --text-primary: #e8e6e0;
-  --text-secondary: #bfbcb3;
-  --text-tertiary: #a0a0a8;
-  --text-muted: #8a8a92;
-  --text-faint: #5e5e66;
+  --text-primary: #ededf0;
+  --text-secondary: #b4b4bc;
+  --text-tertiary: #9a9aa2;
+  --text-muted: #82828a;
+  --text-faint: #56565e;
 
-  --accent-bg: #e8e6e0;
-  --accent-fg: #1a1a1a;
+  /* Primary button stays brand indigo in dark too */
+  --accent-bg: #635bff;
+  --accent-fg: #ffffff;
 
-  --brand-red-soft: #3a1a1a;
+  --brand-red-soft: #1e1b3a;
 
-  --stage-bg: #1d120b;
+  --stage-bg: #080808;
   --stage-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 
-  --panel-analysis-bg: #2a2414;
-  --panel-analysis-border: #5a4a2a;
-  --panel-analysis-heading: #d4b870;
-  --panel-analysis-body: #e0d2a8;
+  --panel-analysis-bg: #191a2e;
+  --panel-analysis-border: #34366a;
+  --panel-analysis-heading: #a5b4fc;
+  --panel-analysis-body: #c7c9e8;
 
   --panel-warn-bg: #2a1a12;
   --panel-warn-border: #7a4a2a;
   --panel-warn-text: #f0b890;
 
-  --chip-tension-bg: #3a2a10;
-  --chip-tension-border: #a47a18;
-  --chip-tension-fg: #f4d080;
-  --chip-tension-deg: #c8a860;
+  --chip-tension-bg: #251a3a;
+  --chip-tension-border: #7c3aed;
+  --chip-tension-fg: #d6bcfa;
+  --chip-tension-deg: #a78bfa;
 
-  --chip-alt-bg: #1f2a14;
-  --chip-alt-border: #6a8a3a;
-  --chip-alt-fg: #c0d890;
-  --chip-alt-deg: #9abb60;
+  --chip-alt-bg: #0f2a26;
+  --chip-alt-border: #0d9488;
+  --chip-alt-fg: #99e6d6;
+  --chip-alt-deg: #2dd4bf;
 
-  --scale-sugg-bg: #1f2a14;
-  --scale-sugg-border: #3a5020;
-  --scale-sugg-fg: #c0d890;
-  --scale-sugg-hover-bg: #c0d890;
-  --scale-sugg-hover-fg: #1f2a14;
+  --scale-sugg-bg: #191a2e;
+  --scale-sugg-border: #3a3d78;
+  --scale-sugg-fg: #c7c9e8;
+  --scale-sugg-hover-bg: #6366f1;
+  --scale-sugg-hover-fg: #ffffff;
 
   --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.25), 0 12px 32px rgba(0, 0, 0, 0.35);
   --shadow-hero: 0 20px 60px rgba(0, 0, 0, 0.55);
@@ -179,7 +185,7 @@
 body {
   background: var(--bg-page);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   padding: 20px 16px;
   -webkit-font-smoothing: antialiased;
   /* Kill the iOS Safari gray tap flash — focus-visible rings replace it for keyboard users. */
@@ -219,15 +225,16 @@ h1 { font-size: 20px; font-weight: 600; }
 .brand-mark {
   width: 40px; height: 40px;
   flex-shrink: 0;
-  border-radius: 10px;
+  border-radius: 14px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
   display: block;
 }
 .brand-text { display: flex; flex-direction: column; line-height: 1; }
 .brand-wordmark {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
+  font-size: 22px;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
 }
 .brand-tagline {
@@ -242,7 +249,7 @@ h1 { font-size: 20px; font-weight: 600; }
 @media (max-width: 520px) {
   .brand-tagline { display: none; }
   .brand-mark { width: 36px; height: 36px; }
-  .brand-wordmark { font-size: 14px; letter-spacing: 0.18em; }
+  .brand-wordmark { font-size: 19px; letter-spacing: -0.01em; }
 }
 
 .theme-toggle {
@@ -363,7 +370,7 @@ h1 { font-size: 20px; font-weight: 600; }
     0 1px 2px rgba(0, 0, 0, 0.35);
 }
 .stage-clear:focus-visible {
-  outline: 2px solid var(--wood-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 /* 22-fret layout needs a wider canvas than the old 15-fret one; 1100 keeps

@@ -9,3 +9,6 @@ coverage/
 
 # Agent tooling config (local only — not part of the product)
 .claude/
+
+# Internal status/roadmap notes — not for the public repo
+ESTADO.md

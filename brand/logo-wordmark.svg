@@ -1,7 +1,6 @@
-<!-- Fretwise — Wordmark only.
-     Use when the mark already appears separately (e.g., in a masthead with the icon elsewhere). -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 40" role="img" aria-label="Fretwise">
-  <title>Fretwise</title>
-  <text x="0" y="30" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', Inter, system-ui, sans-serif"
-        font-size="28" font-weight="700" letter-spacing="3.9" fill="#1a1a1a">FRETWISE</text>
+<!-- Fretwise — Wordmark only (lowercase italic, Inter 500). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 44" role="img" aria-label="fretwise">
+  <title>fretwise</title>
+  <text x="0" y="32" font-family="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
+        font-style="italic" font-size="32" font-weight="500" letter-spacing="-0.3" fill="#111111">fretwise</text>
 </svg>
