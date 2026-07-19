@@ -6,7 +6,7 @@
   "description": "Guitar chord identifier with real-time fretboard, drop-2 inversions, scale overlays, and Karplus-Strong audio synthesis",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/assemble-site.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
