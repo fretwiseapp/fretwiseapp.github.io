@@ -20,6 +20,9 @@ export default defineConfig({
     },
   },
   build: {
+    // App is published under /app/; the marketing landing owns the site root.
+    // assemble-site.mjs then copies landing/ into dist/ next to this dist/app/.
+    outDir: 'dist/app',
     sourcemap: false,
     minify: 'esbuild',
     target: 'es2020',
