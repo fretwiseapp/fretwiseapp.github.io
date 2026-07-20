@@ -23,21 +23,34 @@ interface FretboardProps {
   scaleName: string;
   showAllVoicings: boolean;
   voicingFilter: VoicingFilter;
+  /** First visible fret is fretStart+1 (0 = from the nut). Default 0. */
+  fretStart?: number;
+  /** How many frets to show. Default FRET_COUNT (the whole neck). Fewer frets =
+   *  bigger cells, since the canvas width is constant. */
+  fretCount?: number;
   onFretClick: (stringIdx: number, fret: number) => void;
   onStringStateClick: (stringIdx: number) => void;
   onFretClickSound: (midi: number) => void;
 }
 
 export const Fretboard = memo(function Fretboard(props: FretboardProps) {
-  const { strings, overlays, tuning, keyName: key, displayMode, view, current, chordRoot, chordQuality, scaleRoot, scaleName, showAllVoicings, voicingFilter, onFretClick, onStringStateClick, onFretClickSound } = props;
+  const { strings, overlays, tuning, keyName: key, displayMode, view, current, chordRoot, chordQuality, scaleRoot, scaleName, showAllVoicings, voicingFilter, fretStart = 0, fretCount = FRET_COUNT, onFretClick, onStringStateClick, onFretClickSound } = props;
 
-  // Canvas grows with fret count so each cell keeps a playable minimum width
-  // (~42 px) on a full 22-fret board — 960 was fine for 15 frets but packs
-  // 22 too tightly to hit accurately on touch. 1280 × 180 gives 56 px/cell,
-  // a bit wider than the default but the .stage scroller handles overflow.
-  const W = 1280, H = 180, padL = 40, padR = 20, padT = 20, padB = 30;
+  // Canvas width is constant; showing fewer frets simply makes each cell wider.
+  // Full neck (default) → ~56 px/cell with the .stage scroller for overflow.
+  // A narrow window (e.g. 5 frets) → big, clearly readable cells that fit without
+  // scrolling (see the fb-windowed class below).
+  const H = 180, padL = 40, padR = 20, padT = 20, padB = 30;
+  const fs0 = Math.max(0, Math.min(fretStart, FRET_COUNT - 1));
+  const winLen = Math.max(1, Math.min(fretCount, FRET_COUNT - fs0));
+  const windowed = winLen < FRET_COUNT;
+  // Fixed per-fret width: the full neck spans 1280 (= today's canvas), so a
+  // windowed view keeps the same cell size and the canvas just gets narrower —
+  // it renders bigger/well-proportioned instead of stretched thin.
+  const fs = (1280 - padL - padR) / FRET_COUNT;
+  const W = padL + padR + winLen * fs;
   const bw = W - padL - padR, bh = H - padT - padB;
-  const fs = bw / FRET_COUNT, ss = bh / 5;
+  const ss = bh / 5;
 
   const { chordPcs, scalePcs, cRoot, qSym } = useMemo(() => {
     let chordPcs: Set<PitchClass> | null = null;
@@ -75,28 +88,31 @@ export const Fretboard = memo(function Fretboard(props: FretboardProps) {
 
   const elements: React.ReactNode[] = [
     <rect key="bg" x={padL} y={padT} width={bw} height={bh} fill="#0d0d0d" />,
-    <rect key="nut" x={padL - 5} y={padT - 2} width={5} height={bh + 4} fill="#e8e8e8" />,
   ];
+  // Nut only when the window starts at the open strings.
+  if (fs0 === 0) elements.push(<rect key="nut" x={padL - 5} y={padT - 2} width={5} height={bh + 4} fill="#e8e8e8" />);
 
-  // Frets + fret numbers
-  for (let f = 1; f <= FRET_COUNT; f++) {
-    const x = padL + f * fs;
+  // Frets + fret numbers (over the visible window; w is the on-screen column,
+  // f is the true fret number).
+  for (let w = 1; w <= winLen; w++) {
+    const f = fs0 + w;
+    const x = padL + w * fs;
     elements.push(
       <rect key={`fret-${f}`} x={x - 1} y={padT} width={2} height={bh} fill="#4a4a4a" />,
       <text key={`fnum-${f}`} x={x - fs / 2} y={H - 10} textAnchor="middle" fontSize={10} fill="#6a6a6a">{f}</text>
     );
   }
   // Dot inlays — Gibson/Fender convention: single dots on 3, 5, 7, 9, 15, 17,
-  // 19 and double dots on 12 and 21. Only render dots that fit inside the board.
+  // 19 and double dots on 12 and 21. Only render dots inside the visible window.
   const SINGLE_INLAYS = [3, 5, 7, 9, 15, 17, 19];
   const DOUBLE_INLAYS = [12, 21];
   for (const f of SINGLE_INLAYS) {
-    if (f > FRET_COUNT) continue;
-    elements.push(<circle key={`inlay-${f}`} cx={padL + f * fs - fs / 2} cy={padT + bh / 2} r={4} fill="#3a3a3a" />);
+    if (f <= fs0 || f > fs0 + winLen) continue;
+    elements.push(<circle key={`inlay-${f}`} cx={padL + (f - fs0) * fs - fs / 2} cy={padT + bh / 2} r={4} fill="#3a3a3a" />);
   }
   for (const f of DOUBLE_INLAYS) {
-    if (f > FRET_COUNT) continue;
-    const cx = padL + f * fs - fs / 2;
+    if (f <= fs0 || f > fs0 + winLen) continue;
+    const cx = padL + (f - fs0) * fs - fs / 2;
     elements.push(
       <circle key={`inlay-${f}-top`} cx={cx} cy={padT + ss * 1.3} r={4} fill="#3a3a3a" />,
       <circle key={`inlay-${f}-bot`} cx={cx} cy={padT + ss * 3.7} r={4} fill="#3a3a3a" />,
@@ -184,13 +200,15 @@ export const Fretboard = memo(function Fretboard(props: FretboardProps) {
       }
     }
 
-    for (let f = 0; f <= FRET_COUNT; f++) {
-      const x = f === 0 ? padL - 18 : padL + f * fs - fs / 2;
-      if (inChord && f > 0) {
+    // w = on-screen column (0 = the open-string slot left of the nut), f = true fret.
+    for (let w = 0; w <= winLen; w++) {
+      const f = w === 0 ? 0 : fs0 + w;
+      const x = w === 0 ? padL - 18 : padL + w * fs - fs / 2;
+      if (inChord && w > 0) {
         elements.push(
           <rect
             key={`fh-${st}-${f}`}
-            x={padL + (f - 1) * fs} y={y - ss / 2} width={fs} height={ss}
+            x={padL + (w - 1) * fs} y={y - ss / 2} width={fs} height={ss}
             fill="transparent" style={{ cursor: 'pointer' }}
             onClick={() => {
               onFretClick(st, f);
@@ -302,6 +320,8 @@ export const Fretboard = memo(function Fretboard(props: FretboardProps) {
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label={ariaSummary}
+      className={windowed ? 'fb-windowed' : undefined}
+      style={windowed ? { width: `${winLen * 92}px`, maxWidth: '100%', minWidth: 0, height: 'auto' } : undefined}
     >
       {elements}
     </svg>
