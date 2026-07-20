@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useAppState, identifyCurrent } from './ui/hooks/useAppState';
 import { useTheme } from './ui/hooks/useTheme';
 import { useKeyboardShortcuts } from './ui/hooks/useKeyboardShortcuts';
@@ -6,6 +6,7 @@ import { Controls } from './ui/components/Controls';
 import { Chips } from './ui/components/Chips';
 import { HeroChord } from './ui/components/HeroChord';
 import { Fretboard } from './ui/components/Fretboard';
+import { BuilderBoard } from './ui/components/BuilderBoard';
 import { StringButtons } from './ui/components/StringButtons';
 import { ResultsCard } from './ui/components/ResultsCard';
 import { ThemeToggle } from './ui/components/ThemeToggle';
@@ -13,9 +14,12 @@ import { BrandHeader } from './ui/components/BrandHeader';
 import { playNote, playShape } from './audio';
 import { SHAPES } from './data/shapes';
 
+type Tab = 'identify' | 'build';
+
 export function App() {
   const [state, actions] = useAppState();
   const [theme, setTheme, effectiveTheme] = useTheme();
+  const [tab, setTab] = useState<Tab>('identify');
 
   const { tuning, ext, candidates, current } = useMemo(
     () => identifyCurrent(state),
@@ -56,56 +60,94 @@ export function App() {
         <ThemeToggle theme={theme} effective={effectiveTheme} onChange={setTheme} />
       </BrandHeader>
 
+      <div className="tabs" role="tablist" aria-label="Modo">
+        <button type="button" role="tab" aria-selected={tab === 'identify'} className={tab === 'identify' ? 'on' : ''} onClick={() => setTab('identify')}>Identificar</button>
+        <button type="button" role="tab" aria-selected={tab === 'build'} className={tab === 'build' ? 'on' : ''} onClick={() => setTab('build')}>Constructor</button>
+      </div>
+
       <Controls state={state} actions={actions} />
-      <Chips state={state} actions={actions} />
 
-      <div className="hero-bar">
-        <HeroChord current={current} pcs={ext.pcs} bassPc={ext.bassPc} key_={state.key} />
-      </div>
+      {tab === 'identify' ? (
+        <>
+          <Chips state={state} actions={actions} />
 
-      <div className="stage">
-        <Fretboard
-          strings={state.strings}
-          overlays={state.overlays}
-          tuning={tuning}
-          keyName={state.key}
-          displayMode={state.displayMode}
-          view={state.view}
-          current={current}
-          chordRoot={state.chordRoot}
-          chordQuality={state.chordQuality}
-          scaleRoot={state.scaleRoot}
-          scaleName={state.scaleName}
-          showAllVoicings={state.showAllVoicings}
-          voicingFilter={state.voicingFilter}
-          onFretClick={actions.toggleFret}
-          onStringStateClick={actions.toggleStringState}
-          onFretClickSound={(midi) => playNote(midi, 0, 1.2, 0.38)}
-        />
-        <StringButtons strings={state.strings} onToggle={actions.toggleStringState} />
-        {/* Limpiar lives in its own row under the fretboard so it never overlaps
-            fret graphics. Horizontally offset to the right to sit roughly under
-            frets 15-17 on wide layouts — collapses to flush-right on narrow ones. */}
-        <div className="stage-clear-row">
-          <button
-            type="button"
-            className="stage-clear"
-            onClick={actions.clear}
-            aria-label="Limpiar diapasón"
-          >Limpiar</button>
-        </div>
-      </div>
+          <div className="hero-bar">
+            <HeroChord current={current} pcs={ext.pcs} bassPc={ext.bassPc} key_={state.key} />
+          </div>
 
-      <ResultsCard
-        state={state}
-        actions={actions}
-        current={current}
-        candidates={candidates}
-        pcs={ext.pcs}
-        bassPc={ext.bassPc}
-        midi={ext.midi}
-        tuning={tuning}
-      />
+          <div className="stage">
+            <Fretboard
+              strings={state.strings}
+              overlays={state.overlays}
+              tuning={tuning}
+              keyName={state.key}
+              displayMode={state.displayMode}
+              view={state.view}
+              current={current}
+              chordRoot={state.chordRoot}
+              chordQuality={state.chordQuality}
+              scaleRoot={state.scaleRoot}
+              scaleName={state.scaleName}
+              showAllVoicings={state.showAllVoicings}
+              voicingFilter={state.voicingFilter}
+              onFretClick={actions.toggleFret}
+              onStringStateClick={actions.toggleStringState}
+              onFretClickSound={(midi) => playNote(midi, 0, 1.2, 0.38)}
+            />
+            <StringButtons strings={state.strings} onToggle={actions.toggleStringState} />
+            {/* Limpiar lives in its own row under the fretboard so it never overlaps
+                fret graphics. Horizontally offset to the right to sit roughly under
+                frets 15-17 on wide layouts — collapses to flush-right on narrow ones. */}
+            <div className="stage-clear-row">
+              <button
+                type="button"
+                className="stage-clear"
+                onClick={actions.clear}
+                aria-label="Limpiar diapasón"
+              >Limpiar</button>
+            </div>
+          </div>
+
+          <ResultsCard
+            state={state}
+            actions={actions}
+            current={current}
+            candidates={candidates}
+            pcs={ext.pcs}
+            bassPc={ext.bassPc}
+            midi={ext.midi}
+            tuning={tuning}
+          />
+        </>
+      ) : (
+        <>
+          <div className="hero-bar">
+            <HeroChord current={current} pcs={ext.pcs} bassPc={ext.bassPc} key_={state.key} />
+          </div>
+
+          <div className="stage stage-builder">
+            <BuilderBoard
+              strings={state.strings}
+              tuning={tuning}
+              current={current}
+              displayMode={state.displayMode}
+              keyName={state.key}
+              onFretClick={actions.toggleFret}
+              onStringStateClick={actions.toggleStringState}
+              onFretClickSound={(midi) => playNote(midi, 0, 1.2, 0.38)}
+            />
+            <StringButtons strings={state.strings} onToggle={actions.toggleStringState} />
+            <div className="stage-clear-row">
+              <button
+                type="button"
+                className="stage-clear"
+                onClick={actions.clear}
+                aria-label="Limpiar diapasón"
+              >Limpiar</button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
