@@ -520,6 +520,44 @@ h1 { font-size: 20px; font-weight: 600; }
   background: var(--accent-bg); color: var(--accent-fg); border-color: var(--accent-bg);
 }
 
+/* Mode tabs: Identificar / Constructor */
+.tabs {
+  display: inline-flex; gap: 4px; margin: 0 0 12px;
+  padding: 4px; border: 1px solid var(--border-default); border-radius: 10px;
+  background: var(--bg-input);
+}
+.tabs button {
+  font: inherit; font-size: 13px; font-weight: 600; padding: 7px 16px;
+  border-radius: 7px; border: 1px solid transparent;
+  background: transparent; color: var(--text-tertiary); cursor: pointer;
+  transition: all 0.12s;
+}
+.tabs button:hover { color: var(--text-primary); }
+.tabs button.on {
+  background: var(--accent-bg); color: var(--accent-fg); border-color: var(--accent-bg);
+}
+
+/* Chord builder — compact 7-fret window */
+.stage-builder { align-items: center; }
+.builder { width: 100%; max-width: 620px; }
+.builder-pos {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin-bottom: 8px;
+}
+.builder-pos button {
+  font: inherit; font-size: 15px; line-height: 1; width: 34px; height: 34px;
+  border-radius: 8px; border: 1px solid var(--border-default);
+  background: var(--bg-card); color: var(--text-primary); cursor: pointer;
+  transition: all 0.12s;
+}
+.builder-pos button:hover:not(:disabled) { border-color: var(--accent-bg); color: var(--accent-bg); }
+.builder-pos button:disabled { opacity: 0.35; cursor: default; }
+.builder-pos-label { font-size: 13px; color: var(--text-secondary); }
+.builder-pos-label strong { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+/* Override .stage svg's min-width:1100px (meant for the full neck) so the compact
+   board fits its container instead of forcing the .stage horizontal scroller. */
+.builder svg { display: block; width: 100%; min-width: 0; height: auto; }
+
 datalist { font-family: inherit; }
 
 /* Respect OS reduce-motion setting — theme transitions and voicing-card lift become instant. */
