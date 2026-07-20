@@ -7,10 +7,13 @@ const GLYPH: Record<Theme, string> = {
   auto: '◐',
 };
 
+// Two-state cycle: auto ↔ dark. "Claro" was removed as an explicit choice —
+// auto still renders light when the OS is in light mode. A legacy stored
+// 'light' self-heals to 'auto' on the next click.
 const NEXT: Record<Theme, Theme> = {
-  auto: 'light',
-  light: 'dark',
+  auto: 'dark',
   dark: 'auto',
+  light: 'auto',
 };
 
 const LABEL: Record<Theme, string> = {
@@ -26,7 +29,7 @@ interface ThemeToggleProps {
 }
 
 /**
- * Three-state theme cycle: auto → light → dark → auto.
+ * Two-state theme cycle: auto ↔ dark.
  * Shows the *stored* preference (so users can see when they're in 'auto'), and
  * annotates the effective theme as a secondary hint when auto is chosen.
  */

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useAppState, identifyCurrent } from './ui/hooks/useAppState';
 import { useTheme } from './ui/hooks/useTheme';
 import { useKeyboardShortcuts } from './ui/hooks/useKeyboardShortcuts';
@@ -10,7 +10,7 @@ import { StringButtons } from './ui/components/StringButtons';
 import { ResultsCard } from './ui/components/ResultsCard';
 import { ThemeToggle } from './ui/components/ThemeToggle';
 import { BrandHeader } from './ui/components/BrandHeader';
-import { playNote, playShape, setEffectEnabled } from './audio';
+import { playNote, playShape } from './audio';
 import { SHAPES } from './data/shapes';
 
 export function App() {
@@ -36,7 +36,7 @@ export function App() {
     if (v) playShape(v, tuning);
   }, [state.chordQuality, state.voicingIdx, actions, tuning]);
   const cycleTheme = useCallback(() => {
-    const next = theme === 'auto' ? 'light' : theme === 'light' ? 'dark' : 'auto';
+    const next = theme === 'dark' ? 'auto' : 'dark';
     setTheme(next);
   }, [theme, setTheme]);
 
@@ -49,15 +49,6 @@ export function App() {
     onPrevVoicing: () => cycleVoicing(-1),
     onCycleTheme: cycleTheme,
   });
-
-  // Mirror effects state to the audio engine whenever it changes. The engine's
-  // chain is built lazily on first playback — calling setEffectEnabled before
-  // any sound has played is safe (buildChain runs on demand).
-  useEffect(() => {
-    setEffectEnabled('chorus', state.effects.chorus);
-    setEffectEnabled('delay', state.effects.delay);
-    setEffectEnabled('distortion', state.effects.distortion);
-  }, [state.effects.chorus, state.effects.delay, state.effects.distortion]);
 
   return (
     <div className="app">

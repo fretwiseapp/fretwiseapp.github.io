@@ -1,9 +1,9 @@
 import { useRef, type ChangeEvent, type KeyboardEvent } from 'react';
-import type { AppState, AppActions, EffectsState } from '../hooks/useAppState';
+import type { AppState, AppActions } from '../hooks/useAppState';
 import type { DisplayMode, Key, TuningName, ViewMode, PitchClass } from '@engine/types';
 import { SHARP, FLAT, TUNINGS } from '@engine/constants';
 import { SHAPES } from '@data/shapes';
-import { SCALES } from '@data/scales';
+import { SCALE_FAMILIES } from '@data/scales';
 import { qBySymbol } from '@engine/qualities';
 import { playShape } from '@audio/index';
 
@@ -128,48 +128,17 @@ export function Controls({ state, actions }: ControlsProps) {
             SCALES[''] is undefined → scalePcs stays null → no overlay rendered. */}
         <select value={state.scaleName} onChange={(e: ChangeEvent<HTMLSelectElement>) => actions.setScale(state.scaleRoot, e.target.value)}>
           <option value="">— Ninguna —</option>
-          {Object.keys(SCALES).map((n) => <option key={n} value={n}>{n}</option>)}
+          {SCALE_FAMILIES.map((fam) => (
+            <optgroup key={fam.label} label={fam.label}>
+              {fam.scales.map((n) => <option key={n} value={n}>{n}</option>)}
+            </optgroup>
+          ))}
         </select>
         <div className="sep" />
         <label>Voicing</label>
         <VoicingPicker state={state} actions={actions} />
       </div>
-
-      <div className="bar">
-        <label>Efectos</label>
-        <EffectsPicker effects={state.effects} onToggle={actions.toggleEffect} />
-      </div>
     </>
-  );
-}
-
-interface EffectsPickerProps {
-  effects: EffectsState;
-  onToggle: (name: keyof EffectsState) => void;
-}
-
-/** Toggle pills for Chorus / Delay / Distortion. Each click flips its wet gain
- *  via a short smoothing ramp so the change is audible but click-free. */
-function EffectsPicker({ effects, onToggle }: EffectsPickerProps) {
-  const fxs: { key: keyof EffectsState; label: string; hint: string }[] = [
-    { key: 'chorus',     label: 'Chorus',     hint: 'Modulación suave tipo shimmer — 0.8 Hz, ±3 ms' },
-    { key: 'delay',      label: 'Delay',      hint: 'Eco slapback a 320 ms con 35 % de realimentación' },
-    { key: 'distortion', label: 'Distorsión', hint: 'Soft-clip estilo válvula con compensación de volumen' },
-  ];
-  return (
-    <div className="effects-picker" role="group" aria-label="Efectos de audio">
-      {fxs.map((fx) => (
-        <button
-          key={fx.key}
-          className={effects[fx.key] ? 'on' : ''}
-          onClick={() => onToggle(fx.key)}
-          title={fx.hint}
-          aria-pressed={effects[fx.key]}
-        >
-          {fx.label}
-        </button>
-      ))}
-    </div>
   );
 }
 
