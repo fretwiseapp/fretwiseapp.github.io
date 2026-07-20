@@ -74,6 +74,21 @@ export const SCALES: Readonly<Record<string, readonly number[]>> = {
 } as const;
 
 /**
+ * Scales grouped into theory families, in didactic order, for a grouped picker
+ * (rendered as <optgroup>s). Every key of SCALES appears exactly once here.
+ * Keeping this in the data layer means the UI needs no grouping logic.
+ */
+export const SCALE_FAMILIES: readonly { readonly label: string; readonly scales: readonly string[] }[] = [
+  { label: 'Modos', scales: ['Jónica (Mayor)', 'Dórica', 'Frigia', 'Lidia', 'Mixolidia', 'Eólica (menor natural)', 'Locria'] },
+  { label: 'Menor armónica', scales: ['Menor armónica', 'Frigia dominante'] },
+  { label: 'Menor melódica', scales: ['Menor melódica', 'Lidia aumentada', 'Lidia dominante', 'Mixolidia b6', 'Locria #2', 'Alterada'] },
+  { label: 'Pentatónicas y blues', scales: ['Pentatónica mayor', 'Pentatónica menor', 'Blues menor', 'Blues mayor'] },
+  { label: 'Bebop', scales: ['Bebop mayor', 'Bebop dominante', 'Bebop dórica'] },
+  { label: 'Simétricas', scales: ['Tonos enteros', 'Disminuida (H-W)', 'Disminuida (W-H)', 'Cromática'] },
+  { label: 'Exóticas y del mundo', scales: ['Hirajoshi', 'In-sen', 'Yo', 'Doble armónica (Bizantina)', 'Hungara menor', 'Gitana (Romani)', 'Napolitana menor', 'Napolitana mayor', 'Persa', 'Enigmática', 'Prometeo', 'Árabe', 'Egipcia'] },
+] as const;
+
+/**
  * Suggested scales to play over each chord quality.
  *
  * Source convention: Mark Levine, *The Jazz Theory Book* (the "chord/scale" tables in

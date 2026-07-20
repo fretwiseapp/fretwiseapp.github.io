@@ -1,6 +1,5 @@
 import type { MidiNote, Strings, Tuning } from '../engine/types';
 import { getAudioContext, tryResume } from './context';
-import { getEffectsInput } from './effects';
 
 const midiToFreq = (m: MidiNote): number => 440 * Math.pow(2, (m - 69) / 12);
 
@@ -56,10 +55,7 @@ export function playNote(
   osc1.connect(lp);
   osc2Gain.connect(lp);
   lp.connect(g);
-  // Route through the shared effects chain (chorus/delay/distortion). The chain
-  // is lazily built on first call; when all effects are off, it's a transparent
-  // unity-gain pass-through to destination.
-  g.connect(getEffectsInput());
+  g.connect(getAudioContext().destination);
 
   osc1.start(t0);
   osc1.stop(t0 + duration + 0.05);

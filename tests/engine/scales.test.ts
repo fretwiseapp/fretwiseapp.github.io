@@ -1,11 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { SCALES, CHORD_SCALES } from '../../src/data/scales';
+import { SCALES, CHORD_SCALES, SCALE_FAMILIES } from '../../src/data/scales';
 import { SHAPES } from '../../src/data/shapes';
 import { degOfScale } from '../../src/engine/scales';
 
 describe('scales library', () => {
   it('has at least 30 scales', () => {
     expect(Object.keys(SCALES).length).toBeGreaterThanOrEqual(30);
+  });
+
+  it('SCALE_FAMILIES covers every scale exactly once', () => {
+    const grouped = SCALE_FAMILIES.flatMap((f) => f.scales);
+    // No duplicates across families.
+    expect(new Set(grouped).size).toBe(grouped.length);
+    // Same membership as SCALES (nothing missing, nothing extra).
+    expect([...grouped].sort()).toEqual(Object.keys(SCALES).sort());
   });
 
   const spotChecks: Array<[string, number[]]> = [

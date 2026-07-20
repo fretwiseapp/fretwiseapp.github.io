@@ -20,22 +20,9 @@ interface PersistedPrefs {
   scaleName: string;
   showAllVoicings: boolean;
   voicingFilter: VoicingFilter;
-  effects: EffectsState;
 }
 
 export type VoicingFilter = Record<VoicingFamily, boolean>;
-
-export interface EffectsState {
-  chorus: boolean;
-  delay: boolean;
-  distortion: boolean;
-}
-
-const DEFAULT_EFFECTS: EffectsState = {
-  chorus: false,
-  delay: false,
-  distortion: false,
-};
 
 const DEFAULT_VOICING_FILTER: VoicingFilter = {
   caged: true,
@@ -50,12 +37,6 @@ function isVoicingFilter(v: unknown): v is VoicingFilter {
   if (!v || typeof v !== 'object') return false;
   const o = v as Record<string, unknown>;
   return VOICING_FAMILY_KEYS.every((k) => typeof o[k] === 'boolean');
-}
-
-function isEffectsState(v: unknown): v is EffectsState {
-  if (!v || typeof v !== 'object') return false;
-  const o = v as Record<string, unknown>;
-  return typeof o.chorus === 'boolean' && typeof o.delay === 'boolean' && typeof o.distortion === 'boolean';
 }
 
 const VALID_DISPLAY_MODES: readonly DisplayMode[] = ['note', 'deg'];
@@ -88,7 +69,6 @@ function loadPrefs(): Partial<PersistedPrefs> {
     if (typeof p.scaleName === 'string') out.scaleName = p.scaleName;
     if (typeof p.showAllVoicings === 'boolean') out.showAllVoicings = p.showAllVoicings;
     if (isVoicingFilter(p.voicingFilter)) out.voicingFilter = p.voicingFilter;
-    if (isEffectsState(p.effects)) out.effects = p.effects;
     return out;
   } catch {
     return {};
@@ -228,8 +208,6 @@ export interface AppState {
   showAllVoicings: boolean;   // when true, fretboard renders ALL voicings of the current chord as colored rings
   /** Per-family visibility toggles; only applied while `showAllVoicings` is on. */
   voicingFilter: VoicingFilter;
-  /** Per-effect on/off toggles applied to the global audio chain. */
-  effects: EffectsState;
 }
 
 export interface AppActions {
@@ -248,7 +226,6 @@ export interface AppActions {
   clearOverlays: () => void;
   toggleShowAllVoicings: () => void;
   toggleVoicingFamily: (f: VoicingFamily) => void;
-  toggleEffect: (name: keyof EffectsState) => void;
   toggleFret: (stringIdx: number, fret: number) => void;
   toggleStringState: (stringIdx: number) => void;
   clear: () => void;
@@ -280,7 +257,6 @@ export function useAppState(): [AppState, AppActions] {
       stackMode: false,
       showAllVoicings: prefs.showAllVoicings ?? false,
       voicingFilter: prefs.voicingFilter ?? { ...DEFAULT_VOICING_FILTER },
-      effects: prefs.effects ?? { ...DEFAULT_EFFECTS },
     };
   });
 
@@ -296,9 +272,8 @@ export function useAppState(): [AppState, AppActions] {
       scaleName: state.scaleName,
       showAllVoicings: state.showAllVoicings,
       voicingFilter: state.voicingFilter,
-      effects: state.effects,
     });
-  }, [state.tuning, state.key, state.displayMode, state.view, state.scaleRoot, state.scaleName, state.showAllVoicings, state.voicingFilter, state.effects]);
+  }, [state.tuning, state.key, state.displayMode, state.view, state.scaleRoot, state.scaleName, state.showAllVoicings, state.voicingFilter]);
 
   // Keep the URL in sync with the *shareable* slice (strings/tuning/view). Writes
   // via replaceState so the back button isn't polluted with every fret tap.
@@ -370,11 +345,6 @@ export function useAppState(): [AppState, AppActions] {
     ...s,
     voicingFilter: { ...s.voicingFilter, [f]: !s.voicingFilter[f] },
   })), []);
-  const toggleEffect = useCallback((name: keyof EffectsState) => setState((s) => ({
-    ...s,
-    effects: { ...s.effects, [name]: !s.effects[name] },
-  })), []);
-
   const toggleFret = useCallback((stringIdx: number, fret: number) => {
     setState((s) => {
       const next = [...s.strings] as Strings;
@@ -408,9 +378,9 @@ export function useAppState(): [AppState, AppActions] {
     setChordFromPicker, setChordFromName, setChordFromChip,
     setVoicingIdx, selectVoicingCard,
     toggleStackMode, removeOverlay, clearOverlays, toggleShowAllVoicings,
-    toggleVoicingFamily, toggleEffect,
+    toggleVoicingFamily,
     toggleFret, toggleStringState, clear,
-  }), [setTuning, setKey, setDisplayMode, setView, setScale, setChordFromPicker, setChordFromName, setChordFromChip, setVoicingIdx, selectVoicingCard, toggleStackMode, removeOverlay, clearOverlays, toggleShowAllVoicings, toggleVoicingFamily, toggleEffect, toggleFret, toggleStringState, clear]);
+  }), [setTuning, setKey, setDisplayMode, setView, setScale, setChordFromPicker, setChordFromName, setChordFromChip, setVoicingIdx, selectVoicingCard, toggleStackMode, removeOverlay, clearOverlays, toggleShowAllVoicings, toggleVoicingFamily, toggleFret, toggleStringState, clear]);
 
   return [state, actions];
 }

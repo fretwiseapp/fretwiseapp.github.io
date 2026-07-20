@@ -21,7 +21,13 @@ export function resolveTheme(t: Theme): 'light' | 'dark' {
  * Applies `data-theme` attribute on <html> so CSS variables re-cascade.
  */
 export function useTheme(): [Theme, (t: Theme) => void, 'light' | 'dark'] {
-  const [theme, setTheme] = useLocalStorage<Theme>(STORAGE_KEY, 'auto');
+  const [stored, setTheme] = useLocalStorage<Theme>(STORAGE_KEY, 'auto');
+  // "Claro" is no longer a selectable choice — only AUTO and OSCURO. A legacy
+  // stored 'light' is coerced to 'auto' so the label never shows "Claro".
+  const theme: Theme = stored === 'light' ? 'auto' : stored;
+  useEffect(() => {
+    if (stored === 'light') setTheme('auto');
+  }, [stored, setTheme]);
   const effective = resolveTheme(theme);
 
   useEffect(() => {

@@ -503,25 +503,20 @@ h1 { font-size: 20px; font-weight: 600; }
 .voicing-card .inv { font-size: 9px; color: var(--brand-red); font-weight: 600; text-align: center; margin-top: 4px; }
 .voicing-card svg { display: block; margin: 0 auto; }
 
-/* Family filter shown while "Ver todos" is active — isolate CAGED from jazz voicings.
-   Shares pill styling with .effects-picker below — same tactile feel for toggle groups. */
-.voicing-filter,
-.effects-picker {
+/* Family filter shown while "Ver todos" is active — isolate CAGED from jazz voicings. */
+.voicing-filter {
   display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center;
   padding: 4px; border: 1px solid var(--border-default); border-radius: 8px;
   background: var(--bg-input);
 }
-.voicing-filter button,
-.effects-picker button {
+.voicing-filter button {
   font: inherit; font-size: 11px; font-weight: 600; padding: 5px 10px;
   border-radius: 6px; border: 1px solid transparent;
   background: transparent; color: var(--text-tertiary); cursor: pointer;
   transition: all 0.12s;
 }
-.voicing-filter button:hover,
-.effects-picker button:hover { background: var(--bg-card); color: var(--text-primary); }
-.voicing-filter button.on,
-.effects-picker button.on {
+.voicing-filter button:hover { background: var(--bg-card); color: var(--text-primary); }
+.voicing-filter button.on {
   background: var(--accent-bg); color: var(--accent-fg); border-color: var(--accent-bg);
 }
 
