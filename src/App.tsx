@@ -14,17 +14,19 @@ import { playNote, playShape } from './audio';
 import { SHAPES } from './data/shapes';
 import { FRET_COUNT } from '@engine/constants';
 
-// Fret-window presets. 'all' = the full neck (default); a number zooms to that
-// many frets, enlarging the cells so a chord high up the neck reads clearly.
+// Fret-window presets. A number zooms to that many frets (7 by default),
+// enlarging the cells so a chord high up the neck reads clearly; 'all' shows
+// the full neck.
 const FRET_WINDOWS: readonly (number | 'all')[] = ['all', 7, 5, 4];
 
 export function App() {
   const [state, actions] = useAppState();
   const [theme, setTheme, effectiveTheme] = useTheme();
 
-  // Fret-window zoom (view-only, not persisted). start is 0-based; first visible
-  // fret is start+1.
-  const [fretLen, setFretLen] = useState<number | 'all'>('all');
+  // Fret-window zoom (view-only, not persisted). Defaults to a 7-fret window at
+  // the nut (frets 1–7); ◀/▶ slide it (1–7, 2–8, …) and the size buttons change
+  // the span ("Todos" shows the whole neck). start is 0-based (first fret = start+1).
+  const [fretLen, setFretLen] = useState<number | 'all'>(7);
   const [fretStart, setFretStart] = useState(0);
   const winLen = fretLen === 'all' ? FRET_COUNT : fretLen;
   const maxStart = Math.max(0, FRET_COUNT - winLen);
