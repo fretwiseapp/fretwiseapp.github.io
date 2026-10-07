@@ -9,6 +9,7 @@ export * from './audit';
 export * from './time';
 export * from './fingering';
 export * from './generate';
+export * from './explain';
 
 import { SHAPES } from '../data/shapes';
 import { SHARP, FLAT } from './constants';
