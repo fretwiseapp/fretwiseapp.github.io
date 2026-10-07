@@ -67,7 +67,7 @@ const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
 const prodDeps = Object.keys(pkg.dependencies ?? {});
 
 /* ---------- docs ---------- */
-const DOCS = ['INDEX.md', 'PROYECTO.md', 'BENCHMARK.md', 'ESTADO.md', 'README.md', 'docs/ARCHITECTURE.md'];
+const DOCS = ['INDEX.md', 'PROYECTO.md', 'BENCHMARK.md', 'README.md', 'docs/ARCHITECTURE.md'];
 
 /* ---------- output ---------- */
 const out = [];
@@ -106,6 +106,6 @@ for (const d of DOCS) {
 }
 p();
 p('en vivo        https://fretwiseapp.github.io/  ·  /app/');
-p('dev            npm run dev → :5180   (preview config: fretwise-app)');
+p('dev            npm run dev → :5173   ·   preview fretwise-app → :5180');
 
 console.log(out.join('\n'));
