@@ -6,6 +6,9 @@ export * from './pcset';
 export * from './voicings';
 export * from './scales';
 export * from './audit';
+export * from './time';
+export * from './fingering';
+export * from './generate';
 
 import { SHAPES } from '../data/shapes';
 import { SHARP, FLAT } from './constants';
