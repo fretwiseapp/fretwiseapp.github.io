@@ -20,6 +20,12 @@ import type { ViewMode } from '@engine/types';
  *   ?           Log shortcut reference to console (stand-in until we ship a help modal)
  */
 interface ShortcutDeps {
+  /**
+   * Whether the bindings are live. These are Explorar's shortcuts, so the shell
+   * turns them off on other sections — otherwise Space/A/C would fire against a
+   * fretboard the user isn't looking at. Defaults to true.
+   */
+  enabled?: boolean;
   state: AppState;
   actions: AppActions;
   onPlay: () => void;
@@ -40,9 +46,10 @@ function isEditable(target: EventTarget | null): boolean {
 }
 
 export function useKeyboardShortcuts(deps: ShortcutDeps): void {
-  const { state, actions, onPlay, onArpeggio, onNextVoicing, onPrevVoicing, onCycleTheme } = deps;
+  const { enabled = true, state, actions, onPlay, onArpeggio, onNextVoicing, onPrevVoicing, onCycleTheme } = deps;
 
   useEffect(() => {
+    if (!enabled) return;
     const handler = (e: KeyboardEvent): void => {
       // Never swallow user input inside form controls.
       if (isEditable(e.target)) return;
@@ -125,5 +132,5 @@ export function useKeyboardShortcuts(deps: ShortcutDeps): void {
 
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [state.displayMode, actions, onPlay, onArpeggio, onNextVoicing, onPrevVoicing, onCycleTheme]);
+  }, [enabled, state.displayMode, actions, onPlay, onArpeggio, onNextVoicing, onPrevVoicing, onCycleTheme]);
 }
