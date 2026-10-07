@@ -10,7 +10,8 @@ coverage/
 # Agent tooling config (local only — not part of the product)
 .claude/
 
-# Internal status/roadmap/strategy notes — not for the public repo
+# Internal index/roadmap/strategy notes — not for the public repo
+INDEX.md
 ESTADO.md
 BENCHMARK.md
 PROYECTO.md
