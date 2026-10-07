@@ -521,9 +521,23 @@
 </footer>
 
 <script>
-  /* Waitlist → Google Apps Script (Google Sheet). No-cors POST: escribe aunque
-     no podamos leer la respuesta cross-origin. Optimista por diseño. */
-  var WAITLIST_ENDPOINT = ''; // <-- pegar acá la URL /exec del Apps Script desplegado
+  /* Waitlist → Google Forms.
+
+     Un Form de Google acepta POST sin autenticación ninguna y cae directo en su
+     Sheet: no hay OAuth que autorizar, ni backend que mantener, ni costo. Es la
+     razón por la que reemplazó al Apps Script, que exigía una autorización
+     manual y mientras tanto no guardaba nada.
+
+     El POST va con mode:'no-cors' porque Google no manda cabeceras CORS. Eso
+     significa que el navegador envía el formulario pero NO nos deja leer la
+     respuesta: sabemos que salió, no que entró. Es la limitación real de este
+     método y por eso el mensaje de éxito no promete más de lo que sabemos.
+
+     Para cablearlo hacen falta dos valores de la URL pública del Form:
+       FORM_ID    -> docs.google.com/forms/d/e/<ESTO>/viewform
+       FIELD_NAME -> el name del input del email en el HTML del Form: entry.<N> */
+  var WAITLIST_FORM_ID = '';   // <-- id largo de la URL /forms/d/e/<ID>/viewform
+  var WAITLIST_FIELD   = '';   // <-- p.ej. 'entry.123456789'
 
   function handleWaitlist(form) {
     form.addEventListener('submit', function (ev) {
@@ -541,37 +555,29 @@
       }
       if (honeypot && honeypot.value) { return; } // bot
 
-      btn.disabled = true;
-      var payload = JSON.stringify({
-        email: email,
-        source: form.id,
-        ref: document.referrer || '',
-        ua: navigator.userAgent || ''
-      });
-
-      var done = function () {
-        form.reset();
-        btn.disabled = false;
-        showMsg(msg, '¡Listo! Estás en la lista. Te escribimos pronto. ✓', 'ok');
-      };
-
-      if (!WAITLIST_ENDPOINT) {
-        // Backend aún no cableado: guardamos local para no perder el email.
-        try {
-          var pend = JSON.parse(localStorage.getItem('fretwise:waitlist') || '[]');
-          pend.push({ email: email, ts: Date.now() });
-          localStorage.setItem('fretwise:waitlist', JSON.stringify(pend));
-        } catch (e) {}
-        done();
+      if (!WAITLIST_FORM_ID || !WAITLIST_FIELD) {
+        /* Sin backend no se promete nada. Guardar el mail en el localStorage
+           del propio visitante y decirle "estás en la lista" es mentirle: ese
+           dato no sale nunca de su navegador y no lo lee nadie. */
+        showMsg(msg, 'La lista todavía no está abierta. Volvé en unos días. 🙏', 'err');
         return;
       }
 
-      fetch(WAITLIST_ENDPOINT, {
+      btn.disabled = true;
+
+      var body = new URLSearchParams();
+      body.append(WAITLIST_FIELD, email);
+
+      fetch('https://docs.google.com/forms/d/e/' + WAITLIST_FORM_ID + '/formResponse', {
         method: 'POST',
         mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: payload
-      }).then(done).catch(function () {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+      }).then(function () {
+        form.reset();
+        btn.disabled = false;
+        showMsg(msg, '¡Listo! Te anotamos. Te escribimos pronto. ✓', 'ok');
+      }).catch(function () {
         btn.disabled = false;
         showMsg(msg, 'No pudimos conectar. Probá de nuevo en un momento.', 'err');
       });
