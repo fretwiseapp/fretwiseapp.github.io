@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SCALES, CHORD_SCALES, SCALE_FAMILIES } from '../../src/data/scales';
+import { SCALES, CHORD_SCALES, SCALE_FAMILIES, canonicalScaleName } from '../../src/data/scales';
 import { SHAPES } from '../../src/data/shapes';
 import { degOfScale } from '../../src/engine/scales';
 
@@ -17,7 +17,7 @@ describe('scales library', () => {
   });
 
   const spotChecks: Array<[string, number[]]> = [
-    ['Jónica (Mayor)',              [0, 2, 4, 5, 7, 9, 11]],
+    ['Mayor (Jónica)',              [0, 2, 4, 5, 7, 9, 11]],
     ['Dórica',                      [0, 2, 3, 5, 7, 9, 10]],
     ['Menor armónica',              [0, 2, 3, 5, 7, 8, 11]],
     ['Alterada',                    [0, 1, 3, 4, 6, 8, 10]],
@@ -36,10 +36,34 @@ describe('scales library', () => {
 
   it('degOfScale returns ordinal for in-scale notes', () => {
     // C Ionian: 1=C, 2=D, 3=E, 4=F, 5=G, 6=A, 7=B
-    expect(degOfScale(0, 0, 'Jónica (Mayor)')).toBe('1');
-    expect(degOfScale(2, 0, 'Jónica (Mayor)')).toBe('2');
-    expect(degOfScale(4, 0, 'Jónica (Mayor)')).toBe('3');
-    expect(degOfScale(11, 0, 'Jónica (Mayor)')).toBe('7');
+    expect(degOfScale(0, 0, 'Mayor (Jónica)')).toBe('1');
+    expect(degOfScale(2, 0, 'Mayor (Jónica)')).toBe('2');
+    expect(degOfScale(4, 0, 'Mayor (Jónica)')).toBe('3');
+    expect(degOfScale(11, 0, 'Mayor (Jónica)')).toBe('7');
+  });
+});
+
+describe('scale name migration', () => {
+  it('resolves names saved before the rename', () => {
+    expect(canonicalScaleName('Jónica (Mayor)')).toBe('Mayor (Jónica)');
+    expect(canonicalScaleName('Eólica (menor natural)')).toBe('Menor natural (Eólica)');
+  });
+
+  it('passes current names through and rejects unknown ones', () => {
+    for (const name of Object.keys(SCALES)) {
+      expect(canonicalScaleName(name)).toBe(name);
+    }
+    expect(canonicalScaleName('Escala que no existe')).toBeNull();
+  });
+
+  it('every migration target is a real scale', () => {
+    // A rename map pointing at a name that no longer exists silently drops the
+    // preference it was written to rescue.
+    for (const old of ['Jónica (Mayor)', 'Eólica (menor natural)']) {
+      const to = canonicalScaleName(old);
+      expect(to, `${old} → ?`).not.toBeNull();
+      expect(SCALES[to!]).toBeDefined();
+    }
   });
 });
 

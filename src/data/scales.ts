@@ -17,12 +17,12 @@
  */
 export const SCALES: Readonly<Record<string, readonly number[]>> = {
   // Diatonic modes
-  'Jónica (Mayor)':            [0, 2, 4, 5, 7, 9, 11],
+  'Mayor (Jónica)':            [0, 2, 4, 5, 7, 9, 11],
   'Dórica':                    [0, 2, 3, 5, 7, 9, 10],
   'Frigia':                    [0, 1, 3, 5, 7, 8, 10],
   'Lidia':                     [0, 2, 4, 6, 7, 9, 11],
   'Mixolidia':                 [0, 2, 4, 5, 7, 9, 10],
-  'Eólica (menor natural)':    [0, 2, 3, 5, 7, 8, 10],
+  'Menor natural (Eólica)':    [0, 2, 3, 5, 7, 8, 10],
   'Locria':                    [0, 1, 3, 5, 6, 8, 10],
 
   // Harmonic minor family
@@ -79,7 +79,10 @@ export const SCALES: Readonly<Record<string, readonly number[]>> = {
  * Keeping this in the data layer means the UI needs no grouping logic.
  */
 export const SCALE_FAMILIES: readonly { readonly label: string; readonly scales: readonly string[] }[] = [
-  { label: 'Modos', scales: ['Jónica (Mayor)', 'Dórica', 'Frigia', 'Lidia', 'Mixolidia', 'Eólica (menor natural)', 'Locria'] },
+  // The two most-wanted scales in the library lead the list, under their common
+  // names. Filed as modes they are correct and unfindable: someone looking for
+  // "la mayor" does not scan for "Jónica".
+  { label: 'Mayor, menor y modos', scales: ['Mayor (Jónica)', 'Menor natural (Eólica)', 'Dórica', 'Frigia', 'Lidia', 'Mixolidia', 'Locria'] },
   { label: 'Menor armónica', scales: ['Menor armónica', 'Frigia dominante'] },
   { label: 'Menor melódica', scales: ['Menor melódica', 'Lidia aumentada', 'Lidia dominante', 'Mixolidia b6', 'Locria #2', 'Alterada'] },
   { label: 'Pentatónicas y blues', scales: ['Pentatónica mayor', 'Pentatónica menor', 'Blues menor', 'Blues mayor'] },
@@ -87,6 +90,22 @@ export const SCALE_FAMILIES: readonly { readonly label: string; readonly scales:
   { label: 'Simétricas', scales: ['Tonos enteros', 'Disminuida (H-W)', 'Disminuida (W-H)', 'Cromática'] },
   { label: 'Exóticas y del mundo', scales: ['Hirajoshi', 'In-sen', 'Yo', 'Doble armónica (Bizantina)', 'Hungara menor', 'Gitana (Romani)', 'Napolitana menor', 'Napolitana mayor', 'Persa', 'Enigmática', 'Prometeo', 'Árabe', 'Egipcia'] },
 ] as const;
+
+/**
+ * Scales that were saved under an older name. A preference stored before a
+ * rename must still resolve, or the picker silently falls back to the default
+ * and the user loses their scale.
+ */
+const RENAMED: Readonly<Record<string, string>> = {
+  'Jónica (Mayor)': 'Mayor (Jónica)',
+  'Eólica (menor natural)': 'Menor natural (Eólica)',
+};
+
+/** Current name for a stored scale name, or null if it names no scale we have. */
+export function canonicalScaleName(name: string): string | null {
+  const migrated = RENAMED[name] ?? name;
+  return migrated in SCALES ? migrated : null;
+}
 
 /**
  * Suggested scales to play over each chord quality.
@@ -105,17 +124,17 @@ export const SCALE_FAMILIES: readonly { readonly label: string; readonly scales:
  *     and paired with the whole-half diminished scale.
  */
 export const CHORD_SCALES: Readonly<Record<string, readonly string[]>> = {
-  '':        ['Jónica (Mayor)', 'Lidia', 'Pentatónica mayor', 'Bebop mayor'],
-  'm':       ['Dórica', 'Eólica (menor natural)', 'Frigia', 'Pentatónica menor', 'Blues menor'],
+  '':        ['Mayor (Jónica)', 'Lidia', 'Pentatónica mayor', 'Bebop mayor'],
+  'm':       ['Dórica', 'Menor natural (Eólica)', 'Frigia', 'Pentatónica menor', 'Blues menor'],
   'dim':     ['Locria', 'Disminuida (W-H)'],
   'aug':     ['Tonos enteros', 'Lidia aumentada'],
-  'sus2':    ['Mixolidia', 'Jónica (Mayor)', 'Pentatónica mayor'],
+  'sus2':    ['Mixolidia', 'Mayor (Jónica)', 'Pentatónica mayor'],
   'sus4':    ['Mixolidia', 'Dórica'],
-  '6':       ['Jónica (Mayor)', 'Lidia', 'Pentatónica mayor'],
+  '6':       ['Mayor (Jónica)', 'Lidia', 'Pentatónica mayor'],
   'm6':      ['Dórica', 'Menor melódica'],
-  '6/9':     ['Jónica (Mayor)', 'Lidia', 'Pentatónica mayor'],
-  'maj7':    ['Jónica (Mayor)', 'Lidia', 'Bebop mayor'],
-  'm7':      ['Dórica', 'Eólica (menor natural)', 'Frigia', 'Bebop dórica', 'Pentatónica menor'],
+  '6/9':     ['Mayor (Jónica)', 'Lidia', 'Pentatónica mayor'],
+  'maj7':    ['Mayor (Jónica)', 'Lidia', 'Bebop mayor'],
+  'm7':      ['Dórica', 'Menor natural (Eólica)', 'Frigia', 'Bebop dórica', 'Pentatónica menor'],
   '7':       ['Mixolidia', 'Lidia dominante', 'Alterada', 'Frigia dominante', 'Disminuida (H-W)', 'Bebop dominante', 'Blues menor'],
   'mMaj7':   ['Menor melódica', 'Menor armónica'],
   'dim7':    ['Disminuida (W-H)'],
@@ -123,23 +142,23 @@ export const CHORD_SCALES: Readonly<Record<string, readonly string[]>> = {
   '7b5':     ['Lidia dominante', 'Tonos enteros', 'Alterada'],
   'maj7#5':  ['Lidia aumentada'],
   '7#5':     ['Tonos enteros', 'Alterada'],
-  'add9':    ['Jónica (Mayor)', 'Lidia'],
+  'add9':    ['Mayor (Jónica)', 'Lidia'],
   'm(add9)': ['Dórica', 'Menor melódica'],
-  'add11':   ['Lidia', 'Jónica (Mayor)'],
-  'maj9':    ['Jónica (Mayor)', 'Lidia'],
-  'm9':      ['Dórica', 'Eólica (menor natural)'],
+  'add11':   ['Lidia', 'Mayor (Jónica)'],
+  'maj9':    ['Mayor (Jónica)', 'Lidia'],
+  'm9':      ['Dórica', 'Menor natural (Eólica)'],
   '9':       ['Mixolidia', 'Lidia dominante', 'Bebop dominante'],
   '7b9':     ['Frigia dominante', 'Disminuida (H-W)'],
   '7#9':     ['Alterada', 'Disminuida (H-W)', 'Blues menor'],
   'mMaj9':   ['Menor melódica'],
-  'm11':     ['Dórica', 'Eólica (menor natural)'],
+  'm11':     ['Dórica', 'Menor natural (Eólica)'],
   '11':      ['Mixolidia'],
   'maj7#11': ['Lidia'],
   '7#11':    ['Lidia dominante'],
   '9#11':    ['Lidia dominante'],
   'maj9#11': ['Lidia'],
   '13':      ['Mixolidia', 'Lidia dominante', 'Bebop dominante'],
-  'maj13':   ['Jónica (Mayor)', 'Lidia'],
+  'maj13':   ['Mayor (Jónica)', 'Lidia'],
   'm13':     ['Dórica'],
   '13b9':    ['Disminuida (H-W)'],
   '7b13':    ['Mixolidia b6', 'Alterada', 'Frigia dominante'],

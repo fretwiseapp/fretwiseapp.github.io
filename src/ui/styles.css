@@ -613,39 +613,105 @@ button:focus-visible, select:focus-visible, input:focus-visible {
   background: var(--accent);
 }
 
-/* ---- Practicar (scaffold) ---- */
-.practice-intro { padding: 8px 2px 24px; }
-.practice-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-.practice-lede {
-  font-size: 14px; color: var(--text-secondary);
-  max-width: 62ch; margin-bottom: 24px; line-height: 1.55;
+/* ---- Practicar ---- */
+.practice { padding: 8px 2px 24px; }
+
+.practice-head { margin-bottom: 18px; }
+.practice-head h2 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+.practice-head p {
+  font-size: 13px; color: var(--text-secondary);
+  max-width: 62ch; line-height: 1.55;
 }
-.practice-modes {
-  display: grid; gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+.practice-head strong { color: var(--text-primary); font-weight: 600; }
+
+.practice-controls {
+  display: flex; flex-direction: column; gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg-card); border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
 }
-.practice-mode {
-  border: 1px solid var(--border-default);
-  border-radius: var(--r-md);
-  background: var(--bg-card);
-  padding: 16px;
+.pc-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; }
+
+/* Every control is label-over-input, so rows stay aligned no matter the mix. */
+.pc-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.pc-field > span {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.02em;
+  color: var(--text-muted); white-space: nowrap;
 }
-.practice-mode-head {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; margin-bottom: 8px;
+.pc-field > span strong { color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.pc-grow { flex: 1 1 180px; }
+
+.pc-field select {
+  font: inherit; font-size: 13px;
+  padding: 6px 9px;
+  border-radius: 7px; border: 1px solid var(--border-default);
+  background: var(--bg-input); color: var(--text-primary); cursor: pointer;
+  max-width: 100%;
 }
-.practice-mode-head h3 { font-size: 14px; font-weight: 600; }
-.practice-badge {
-  flex-shrink: 0;
-  font-size: 10px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
-  color: var(--text-muted);
-  border: 1px solid var(--border-default);
-  border-radius: var(--r-pill);
-  padding: 3px 8px;
+.pc-field select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.pc-stepper {
+  display: inline-flex; align-items: center;
+  border: 1px solid var(--border-default); border-radius: 7px;
+  background: var(--bg-input); overflow: hidden;
 }
-.practice-mode p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
-.practice-mode-source {
-  margin-top: 10px; padding-top: 10px;
-  border-top: 1px solid var(--border-hairline);
+.pc-stepper button {
+  font: inherit; font-size: 11px; line-height: 1;
+  padding: 7px 9px; border: none; background: none;
+  color: var(--text-tertiary); cursor: pointer;
+}
+.pc-stepper button:hover:not(:disabled) { background: var(--bg-card-hover); color: var(--text-primary); }
+.pc-stepper button:disabled { opacity: 0.35; cursor: default; }
+.pc-stepper strong {
+  font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;
+  min-width: 46px; text-align: center;
+  color: var(--text-primary);
+}
+
+.pc-check {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--text-secondary);
+  cursor: pointer; padding-bottom: 6px; white-space: nowrap;
+}
+.pc-check input { accent-color: var(--accent); cursor: pointer; }
+
+.practice-stage { margin: 18px 0 0; }
+/* The board is always dark, like the one in Explorar — a fretboard is an object,
+   not a surface, so it does not follow the page theme. */
+.practice-board { display: block; width: 100%; border-radius: 10px; }
+
+.practice-transport {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px;
+  margin-top: 14px; padding: 12px 16px;
+  background: var(--bg-card); border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+}
+.pt-play {
+  font: inherit; font-size: 13px; font-weight: 500;
+  padding: 9px 18px; min-width: 112px;
+  border-radius: 8px; border: 1px solid var(--accent-bg);
+  background: var(--accent-bg); color: var(--accent-fg);
+  cursor: pointer;
+  transition: background 0.15s var(--ease);
+}
+.pt-play:hover { background: var(--accent-600); }
+.pt-play.on {
+  background: var(--bg-input); color: var(--text-primary);
+  border-color: var(--border-default);
+}
+.pt-play.on:hover { background: var(--bg-card-hover); }
+.practice-transport input[type='range'] { accent-color: var(--accent); width: 100%; }
+
+.practice-meta {
+  margin-top: 10px; min-height: 18px;
   font-size: 12px; color: var(--text-muted);
+}
+/* Reserve the width so the metre does not shift as the digit changes. */
+.pm-countin { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.practice-empty {
+  margin-top: 20px; padding: 16px;
+  font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+  background: var(--bg-subtle); border: 1px solid var(--border-hairline);
+  border-radius: var(--r-md);
 }

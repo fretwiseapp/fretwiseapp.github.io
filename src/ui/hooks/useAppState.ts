@@ -4,6 +4,7 @@ import { TUNINGS, FRET_COUNT } from '@engine/constants';
 import { pcsOf, identify } from '@engine/pcset';
 import { buildVoicing } from '@engine/voicings';
 import { parseChordName } from '@engine/index';
+import { canonicalScaleName } from '../../data/scales';
 
 const EMPTY_STRINGS: Strings = ['muted', 'muted', 'muted', 'muted', 'muted', 'muted'];
 
@@ -247,7 +248,8 @@ export function useAppState(): [AppState, AppActions] {
       displayMode: prefs.displayMode ?? 'note',
       view: url.view ?? prefs.view ?? 'chord',
       scaleRoot: prefs.scaleRoot ?? 0,
-      scaleName: prefs.scaleName ?? 'Jónica (Mayor)',
+      // Via canonicalScaleName so a scale saved under an older name still loads.
+      scaleName: (prefs.scaleName ? canonicalScaleName(prefs.scaleName) : null) ?? 'Mayor (Jónica)',
       chordRoot: null,
       chordQuality: null,
       voicingIdx: 0,

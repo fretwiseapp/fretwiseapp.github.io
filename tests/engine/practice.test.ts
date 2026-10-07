@@ -111,7 +111,7 @@ describe('fingering — placements', () => {
 });
 
 describe('fingering — the Viterbi assignment', () => {
-  const cMajor = SCALES['Jónica (Mayor)']!.map((iv) => iv % 12);
+  const cMajor = SCALES['Mayor (Jónica)']!.map((iv) => iv % 12);
 
   it('returns null rather than a wrong answer when a pitch is unreachable', () => {
     expect(fingerSequence([64, 200], win(1, 5))).toBeNull();
@@ -173,7 +173,7 @@ describe('generate — scale exercises', () => {
     // string (G#, 3rd string). A single note is not an exercise.
     expect(buildScaleExercise({ root: 6, scaleName: 'Hirajoshi', window: win(1, 1) })).toBeNull();
     // A degenerate window (min above max) holds nothing at all.
-    expect(buildScaleExercise({ root: 0, scaleName: 'Jónica (Mayor)', window: win(9, 5) })).toBeNull();
+    expect(buildScaleExercise({ root: 0, scaleName: 'Mayor (Jónica)', window: win(9, 5) })).toBeNull();
   });
 
   it('derives a stable id from the options alone', () => {
