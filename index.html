@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Qué puede cargar la página: lo propio, más el formulario (Apps Script contesta desde googleusercontent) y Turnstile de Cloudflare, que separa personas de robots. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; frame-src 'self' https://challenges.cloudflare.com; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; base-uri 'self'; form-action 'self'" />
+  <title>Fretwise · Entiende la guitarra</title>
+  <meta name="description" content="Fretwise te muestra por qué cada nota, acorde y escala está donde está. Y te lo hace escuchar." />
+  <meta name="robots" content="index, follow" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#0B0B0C" />
+
+  <meta property="og:title" content="Fretwise · Entiende la guitarra" />
+  <meta property="og:description" content="Fretwise te muestra por qué cada nota, acorde y escala está donde está. Y te lo hace escuchar." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_LA" />
+  <!-- https://fretwiseapp.github.io/ lo completa assemble-site con la dirección del sitio: un solo lugar para cambiarla. -->
+  <meta property="og:url" content="https://fretwiseapp.github.io/" />
+  <meta property="og:image" content="https://fretwiseapp.github.io/og.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Fretwise en un teléfono, con el título Entiende la guitarra" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111111'/%3E%3Cg stroke='%233a3a3a' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M16 12v40M32 12v40M48 12v40'/%3E%3C/g%3E%3Ccircle cx='16' cy='42' r='6' fill='%23635BFF'/%3E%3Ccircle cx='32' cy='30' r='6' fill='%23ffffff'/%3E%3Ccircle cx='48' cy='18' r='6' fill='%23ffffff'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preload" href="./shots/identificar.jpg" as="image" />
+
+  <!-- Inter, servida desde aquí (licencia OFL): sin pedidos a terceros. -->
+  <style>
+    @font-face { font-family:'Inter'; font-style:normal; font-weight:400; font-display:swap; src:url('./fonts/inter-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family:'Inter'; font-style:normal; font-weight:500; font-display:swap; src:url('./fonts/inter-latin-500-normal.woff2') format('woff2'); }
+    @font-face { font-family:'Inter'; font-style:normal; font-weight:600; font-display:swap; src:url('./fonts/inter-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family:'Inter'; font-style:normal; font-weight:700; font-display:swap; src:url('./fonts/inter-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family:'Inter'; font-style:italic; font-weight:500; font-display:swap; src:url('./fonts/inter-latin-500-italic.woff2') format('woff2'); }
+  </style>
+
+  <style>
+    /* =========================================================
+       Fretwise — landing v2
+       Oscura y sobria. Un solo color fuerte: el acento.
+       La marca vive aquí arriba: colores, letra y curvas.
+       ========================================================= */
+    :root {
+      --bg:        #0B0B0C;
+      --bg-2:      #141416;
+      --bg-3:      #1b1b1e;
+      --text:      #EDEDED;
+      --text-2:    rgba(237,237,237,0.62);
+      --text-3:    rgba(237,237,237,0.42);
+      --line:      rgba(255,255,255,0.09);
+      --line-2:    rgba(255,255,255,0.14);
+      --accent:    #635BFF;
+      --accent-hi: #8a84ff;
+      --accent-halo: rgba(99,91,255,0.15);
+      --err:       #ff8a80;
+      --ok:        #34d399;
+
+      /* FAQ y pie: oscuros aquí; hueso con el tema claro del sistema. */
+      --soft-bg:   #0B0B0C;
+      --soft-card: #141416;
+      --soft-text: #EDEDED;
+      --soft-text-2: rgba(237,237,237,0.62);
+      --soft-line: rgba(255,255,255,0.09);
+
+      --ease: cubic-bezier(.22,1,.36,1);
+      --gutter: clamp(16px, 4vw, 40px);
+      --max: 1200px;
+      color-scheme: dark;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --soft-bg: #F7F7F6;
+        --soft-card: #ffffff;
+        --soft-text: #111111;
+        --soft-text-2: rgba(17,17,17,0.62);
+        --soft-line: rgba(17,17,17,0.10);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+    body {
+      background-color: var(--bg);
+      /* Grano apenas visible, para que el negro no se vea plano. */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .07 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 18px; line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    h1, h2, h3 { text-wrap: balance; letter-spacing: -0.03em; }
+    .wrap { max-width: var(--max); margin: 0 auto; padding-inline: var(--gutter); }
+    .eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-2); }
+    .num { font-variant-numeric: tabular-nums; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 10px;
+    }
+
+    /* ---------- Botones ---------- */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 52px; padding: 0 26px; border-radius: 999px; border: 0;
+      font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; white-space: nowrap;
+      transition: transform 200ms var(--ease), opacity 200ms var(--ease), box-shadow 200ms var(--ease);
+    }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 10px 30px -8px rgba(99,91,255,0.55); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 14px 36px -8px rgba(99,91,255,0.7); }
+    .btn-primary:disabled { opacity: .55; cursor: default; transform: none; }
+    .btn-block { width: 100%; }
+    .link {
+      position: relative; display: inline-flex; align-items: center; gap: 6px; height: 52px;
+      font-size: 16px; font-weight: 600; color: var(--text); background: none; border: 0; cursor: pointer; font-family: inherit;
+    }
+    .link::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: 14px; height: 1px; background: currentColor;
+      transform: scaleX(0); transform-origin: left; transition: transform 240ms var(--ease);
+    }
+    .link:hover::after { transform: scaleX(1); }
+
+    /* ---------- Nav flotante ---------- */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+      border-bottom: 1px solid transparent;
+      transition: background-color 240ms var(--ease), border-color 240ms var(--ease), transform 300ms var(--ease);
+    }
+    .nav.scrolled {
+      background: rgba(11,11,12,0.72);
+      -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+      border-bottom-color: var(--line);
+    }
+    .nav.away { transform: translateY(-100%); }
+    .nav-in { height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; }
+    .brand-wm { font-size: 19px; font-weight: 500; font-style: italic; letter-spacing: -0.01em; }
+    .nav-right { display: inline-flex; align-items: center; gap: 22px; }
+    .nav-link { font-size: 15px; font-weight: 500; color: var(--text-2); transition: color 150ms var(--ease); }
+    .nav-link:hover { color: var(--text); }
+    .nav-cta { height: 44px; padding: 0 20px; font-size: 14px; }
+    .nav .brand, .foot nav a { min-height: 44px; display: inline-flex; align-items: center; }
+    @media (max-width: 560px) { .nav-link { display: none; } }
+
+    /* ---------- Las 6 cuerdas (el motivo de la página) ---------- */
+    .strings { position: absolute; left: 0; width: 100%; pointer-events: none; overflow: visible; }
+    .strings line { stroke: rgba(255,255,255,0.10); vector-effect: non-scaling-stroke; }
+    .js .strings.draw line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 700ms var(--ease) forwards; }
+    .js .strings.draw line:nth-child(2) { animation-delay: 60ms; }
+    .js .strings.draw line:nth-child(3) { animation-delay: 120ms; }
+    .js .strings.draw line:nth-child(4) { animation-delay: 180ms; }
+    .js .strings.draw line:nth-child(5) { animation-delay: 240ms; }
+    .js .strings.draw line:nth-child(6) { animation-delay: 300ms; }
+    @keyframes draw { to { stroke-dashoffset: 0; } }
+    .strings .pluck { transform-box: fill-box; transform-origin: center; }
+    .strings.ring .pluck { animation: pluck 500ms ease-out; }
+    @keyframes pluck {
+      0% { transform: translateY(0); } 15% { transform: translateY(-2px); } 35% { transform: translateY(1.5px); }
+      55% { transform: translateY(-1px); } 75% { transform: translateY(.5px); } 100% { transform: translateY(0); }
+    }
+
+    /* ---------- Teléfono (marco propio, sin marca ajena) ---------- */
+    .phone {
+      position: relative; width: min(100%, 330px); padding: 10px; border-radius: 48px;
+      background: #050506; border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 50px 100px -30px rgba(0,0,0,0.8), 0 0 140px -10px var(--accent-halo);
+    }
+    .phone-screen { position: relative; border-radius: 38px; overflow: hidden; aspect-ratio: 375 / 700; background: #0b0b0b; }
+    .phone-screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    /* La pantalla "corre": cuadros reales de la app que se suceden. */
+    .reel img { opacity: 0; transition: opacity 450ms var(--ease); }
+    .reel img.on { opacity: 1; }
+    .phone-screen::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,0.07) 46%, transparent 60%);
+      background-size: 260% 100%; background-position: var(--sheen, 60%) 0;
+    }
+
+    /* ---------- Escena 3D: el teléfono tiene espesor y las tarjetas, profundidad ---------- */
+    .stage { position: relative; perspective: 1500px; perspective-origin: 50% 40%; display: flex; justify-content: center; }
+    .rig { position: relative; width: min(100%, 330px); transform-style: preserve-3d; will-change: transform; }
+    .stage .phone { width: 100%; transform-style: preserve-3d; box-shadow: none; }
+    .stage .phone .layer {
+      position: absolute; inset: -1px; border-radius: 48px; background: #17171a;
+      border: 1px solid rgba(255,255,255,0.07); transform: translateZ(calc(var(--i) * -3px));
+    }
+    .stage .phone .layer:first-child { box-shadow: 0 60px 120px -30px rgba(0,0,0,0.85), 0 0 160px -10px var(--accent-halo); }
+    .stage .phone-screen { transform: translateZ(1px); }
+    .float { position: absolute; left: var(--x); top: var(--y); transform: translateZ(var(--z)); transform-style: preserve-3d; pointer-events: none; z-index: 2; }
+    .float-in { animation: bob var(--t, 7s) ease-in-out var(--d, 0s) infinite alternate; }
+    @keyframes bob { from { transform: translate3d(0, -7px, 0); } to { transform: translate3d(0, 9px, 0); } }
+    .tag {
+      display: inline-flex; align-items: center; gap: 10px; padding: 11px 15px; border-radius: 15px; white-space: nowrap;
+      background: linear-gradient(180deg, rgba(38,38,44,0.97), rgba(20,20,24,0.97));
+      border: 1px solid rgba(255,255,255,0.13); box-shadow: 0 22px 44px -14px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06);
+      font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: -0.01em;
+    }
+    .tag small { font-size: 13px; font-weight: 500; color: var(--text-2); }
+    .tag .k { color: #fff; background: var(--accent); border-radius: 7px; padding: 2px 7px; }
+    .tag.big { flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px 18px; border-radius: 18px; }
+    .tag.big b { font-size: 30px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; }
+    .degs { display: inline-flex; gap: 5px; margin-top: 4px; }
+    .degs span { min-width: 26px; height: 26px; padding: 0 6px; border-radius: 8px; display: inline-grid; place-items: center; font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.07); color: var(--text); }
+    .degs span.k { background: var(--accent); color: #fff; }
+    .dots { display: inline-flex; gap: 8px; }
+    .dot { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 700; color: #0B0B0C; box-shadow: 0 12px 26px -8px rgba(0,0,0,0.7); }
+    .n-c { background: #f0595f; } .n-e { background: #93d24a; } .n-g { background: #2ec4d6; } .n-b { background: #e862a8; }
+    .set { position: absolute; inset: 0; transform-style: preserve-3d; opacity: 0; transition: opacity 500ms var(--ease); }
+    .set.on { opacity: 1; }
+    .ambient { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .ambient i { position: absolute; width: 760px; height: 760px; border-radius: 50%; background: radial-gradient(closest-side, rgba(99,91,255,0.22), transparent 72%); animation: drift 24s ease-in-out infinite alternate; }
+    .ambient i + i { width: 620px; height: 620px; background: radial-gradient(closest-side, rgba(176,124,255,0.13), transparent 72%); animation-duration: 31s; animation-direction: alternate-reverse; }
+    @keyframes drift { from { transform: translate3d(-8%, -6%, 0); } to { transform: translate3d(10%, 8%, 0); } }
+    @media (max-width: 979px) {
+      .rig { width: min(78%, 300px); }
+      .tag { padding: 9px 12px; font-size: 13px; border-radius: 13px; }
+      .tag.big b { font-size: 24px; }
+      .dot { width: 30px; height: 30px; font-size: 12px; }
+      .float.wide-only { display: none; }
+      /* En pantalla angosta las tarjetas no se salen del borde: se acercan al teléfono. */
+      .float { left: clamp(-6%, var(--x), 50%); }
+    }
+
+    /* ---------- Hero ---------- */
+    .hero { position: relative; min-height: 100vh; min-height: 100svh; display: flex; align-items: flex-start; padding-block: 120px 80px; overflow: hidden; }
+    .hero .strings { top: 50%; height: 120px; transform: translateY(-50%); }
+    .hero-grid { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 64px; align-items: start; width: 100%; }
+    /* Dos líneas siempre: el tamaño sale del ancho que deja el teléfono (la frase mide unas 9 veces su letra). */
+    .hero h1 { font-size: min(5.5rem, calc((min(100vw, 1200px) - 480px) / 9)); font-weight: 700; line-height: 0.98; margin: 22px 0 26px; }
+    .hero h1 span { display: block; white-space: nowrap; }
+    .hero-sub { font-size: clamp(18px, 1.6vw, 21px); color: var(--text-2); max-width: 34ch; margin-bottom: 36px; }
+    .hero-ctas { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+    .hero-phone { justify-self: center; width: 100%; }
+    .hero > .ambient i { right: -10%; top: -10%; }
+    .hero > .ambient i + i { left: -15%; top: 30%; }
+    .js .hero-in { opacity: 0; transform: translateY(24px); animation: rise 700ms var(--ease) forwards; }
+    .js .hero-in.d1 { animation-delay: 90ms; } .js .hero-in.d2 { animation-delay: 180ms; } .js .hero-in.d3 { animation-delay: 270ms; } .js .hero-in.d4 { animation-delay: 360ms; }
+    .js .hero-phone.hero-in { transform: scale(.96); animation: grow 600ms var(--ease) 200ms forwards; }
+    @keyframes rise { to { opacity: 1; transform: none; } }
+    @keyframes grow { to { opacity: 1; transform: none; } }
+    @media (max-width: 979px) {
+      .hero { min-height: 0; padding-block: 120px 72px; }
+      .hero-grid { grid-template-columns: 1fr; gap: 56px; }
+      .hero h1 { font-size: clamp(2.25rem, 10vw, 4.5rem); }
+      .hero h1 span { white-space: normal; }
+      .hero .strings { top: auto; bottom: 240px; transform: none; }
+    }
+
+    /* ---------- Manifiesto ---------- */
+    .manifesto { min-height: 100vh; display: flex; align-items: center; padding-block: 120px; }
+    .manifesto p { font-size: clamp(2rem, 4.6vw, 4rem); font-weight: 600; line-height: 1.14; letter-spacing: -0.03em; max-width: 22ch; margin: 0 auto; text-align: center; }
+    .manifesto .w { opacity: .2; transition: opacity 120ms linear; }
+    .manifesto .hl { color: var(--accent-hi); }
+
+    /* ---------- Recorrido: el teléfono acompaña el scroll ---------- */
+    .tour { position: relative; padding-block: 40px 80px; }
+    .tour-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+    .chapter { position: relative; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding-block: 60px; }
+    .ch-big { position: absolute; top: 50%; left: -0.06em; transform: translateY(-62%); font-size: clamp(9rem, 16vw, 15rem); font-weight: 700; letter-spacing: -0.06em; line-height: 1; color: rgba(255,255,255,0.06); pointer-events: none; user-select: none; }
+    .chapter .eyebrow { position: relative; color: var(--accent-hi); margin-bottom: 18px; }
+    .chapter h2 { position: relative; font-size: clamp(2.2rem, 4.4vw, 3.9rem); font-weight: 700; line-height: 1.02; margin-bottom: 20px; max-width: 14ch; }
+    .chapter p { position: relative; font-size: 19px; color: var(--text-2); max-width: 30ch; }
+    .chapter .stage { display: none; }
+    .tour-side { position: relative; }
+    .tour-sticky { position: sticky; top: 0; height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .tour { overflow-x: clip; }
+    .tour > .ambient i { left: 40%; top: 20%; }
+    .tour-sticky .stage { width: 100%; }
+    .tour-sticky .rig { width: min(100%, 320px); }
+    .tour-sticky .phone-screen .reel { position: absolute; inset: 0; opacity: 0; transform: translateY(10px); transition: opacity 400ms var(--ease), transform 400ms var(--ease); }
+    .tour-sticky .phone-screen .reel.live { opacity: 1; transform: none; }
+    .tour-index { position: absolute; left: 0; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 12px; font-size: 12px; font-weight: 600; color: var(--text-3); }
+    .tour-bar { width: 2px; height: 120px; background: var(--line-2); border-radius: 2px; overflow: hidden; }
+    .tour-bar i { display: block; width: 100%; height: 100%; background: var(--accent); transform-origin: top; transform: scaleY(.2); transition: transform 400ms var(--ease); }
+    @media (max-width: 979px) {
+      .tour-grid { grid-template-columns: 1fr; gap: 0; }
+      .tour-side { display: none; }
+      .chapter { min-height: 0; padding-block: 72px; }
+      .chapter .stage { display: flex; margin-top: 48px; }
+      .ch-big { top: 40px; transform: none; }
+    }
+
+    /* ---------- Escúchalo ---------- */
+    .why { padding-block: 140px; }
+    .why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+    .why h2 { font-size: clamp(2.2rem, 4.4vw, 3.9rem); font-weight: 700; line-height: 1.04; margin: 18px 0 28px; }
+    .why-say { display: flex; gap: 14px; align-items: flex-start; margin-top: 20px; }
+    .why-face img { display: block; width: 56px; height: 56px; }
+    .why-say p { background: var(--bg-2); border: 1px solid var(--line); border-radius: 4px 18px 18px 18px; padding: 14px 18px; font-size: 17px; color: var(--text); min-height: 56px; }
+    .sounds { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .sound { width: 100%; display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 18px; border: 1px solid var(--line); background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer; transition: border-color 200ms var(--ease), background-color 200ms var(--ease); }
+    .sound:hover { border-color: var(--line-2); background: rgba(255,255,255,0.03); }
+    .sound.on { border-color: var(--accent); background: rgba(99,91,255,0.08); }
+    .sound-play { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--line-2); font-size: 13px; }
+    .sound.on .sound-play { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .sound b { font-size: 18px; font-weight: 700; }
+    .sound small { font-size: 14px; color: var(--text-3); }
+    .next-cta { display: flex; justify-content: center; padding-block: 24px 40px; }
+    @media (max-width: 979px) { .why { padding-block: 96px; } .why-grid { grid-template-columns: 1fr; gap: 40px; } }
+    @media (max-width: 480px) { .sound { grid-template-columns: 40px 1fr; } .sound small { grid-column: 2; } }
+
+
+    /* ---------- Pruébalo aquí ---------- */
+    .try { position: relative; padding-block: 140px; text-align: center; overflow: hidden; }
+    .try h2 { font-size: clamp(2.6rem, 6vw, 5.2rem); font-weight: 700; line-height: 1; }
+    .try .lead { font-size: 19px; color: var(--text-2); margin: 18px auto 48px; }
+    .try-halo { position: absolute; left: 50%; top: 58%; width: 720px; height: 720px; margin: -360px 0 0 -360px; border-radius: 50%; background: radial-gradient(closest-side, rgba(99,91,255,0.22), transparent 70%); pointer-events: none; transform: scale(.4); opacity: 0; transition: transform 800ms var(--ease), opacity 800ms var(--ease); }
+    .try.in .try-halo { transform: none; opacity: 1; }
+    .try .phone { margin: 0 auto; }
+    .phone.live { width: 395px; }
+    .phone.live .phone-screen { aspect-ratio: auto; height: 740px; }
+    .phone.live iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #0b0b0b; }
+    .chips { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 32px; padding: 6px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg-2); }
+    .chip { height: 40px; padding: 0 16px; border-radius: 999px; border: 0; background: transparent; color: var(--text-2); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background-color 150ms var(--ease), color 150ms var(--ease); }
+    .chip:hover { color: var(--text); }
+    .chip[aria-pressed="true"] { background: var(--accent); color: #fff; }
+    .try-narrow { display: none; }
+    @media (max-width: 979px) {
+      .try { padding-block: 96px; }
+      .try-wide { display: none; }
+      .try-narrow { display: flex; flex-direction: column; align-items: center; gap: 40px; }
+    }
+
+    /* ---------- .who: la base de Fundadores ---------- */
+    .who { padding-block: 100px 140px; }
+    .who h2 { font-size: clamp(2.2rem, 4.4vw, 3.9rem); font-weight: 700; line-height: 1.04; margin: 18px 0 56px; max-width: 16ch; }
+
+    /* ---------- Tu equipo: los cuatro profes de la app ---------- */
+    .team { padding-block: 40px 140px; }
+    .team h2 { font-size: clamp(2.2rem, 4.4vw, 3.9rem); font-weight: 700; line-height: 1.04; margin: 18px 0 20px; max-width: 18ch; }
+    .team .team-lead { font-size: 19px; color: var(--text-2); max-width: 46ch; margin-bottom: 48px; }
+    .team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .profe {
+      display: flex; flex-direction: column; gap: 8px; padding: 22px; text-align: left;
+      font: inherit; color: inherit; cursor: pointer;
+      border: 1px solid var(--line-2); border-radius: 18px; background: var(--bg-2);
+      transition: border-color 200ms var(--ease);
+    }
+    .profe:hover { border-color: var(--accent); }
+    .profe:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .profe[aria-pressed="true"] { border-color: var(--accent); border-style: solid; }
+    .profe.soon { border-style: dashed; background: transparent; }
+    .profe img { display: block; width: 72px; height: 72px; overflow: visible; }
+    .profe b { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; margin-top: 6px; }
+    .profe .d { display: block; font-size: 16px; color: var(--text-2); flex: 1; }
+    .js .profe.reveal { transition: opacity 600ms var(--ease), transform 600ms var(--ease), border-color 200ms var(--ease); }
+    .profe small { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-2); }
+    .talk { display: flex; gap: 18px; align-items: flex-start; margin-top: 20px; padding: 22px; border: 1px solid var(--line-2); border-radius: 18px; background: var(--bg-2); }
+    .talk-face { flex: none; width: 64px; height: 64px; overflow: visible; }
+    .talk-body { display: grid; gap: 8px; min-width: 0; }
+    .talk-who { font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-hi); }
+    .talk-say { font-size: 18px; line-height: 1.5; max-width: 52ch; }
+    .talk-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+    .talk-actions button {
+      min-height: 44px; padding: 8px 16px; font: inherit; font-size: 15px; font-weight: 600; color: var(--text); cursor: pointer;
+      background: transparent; border: 1px solid var(--line-2); border-radius: 999px;
+    }
+    .talk-actions button:first-child { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .talk-actions button:hover { border-color: var(--accent); }
+    .talk-actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    @media (max-width: 600px) { .talk { flex-direction: column; } .talk-say { font-size: 17px; } }
+    @media (max-width: 1100px) { .team-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .team-grid { grid-template-columns: 1fr; } }
+
+    /* ---------- Fundadores (apagado hasta la preventa) ---------- */
+    [data-presale="off"] { display: none !important; }
+
+    /* ---------- Formulario ---------- */
+    .signup-note { font-size: 14px; color: var(--text-3); max-width: 560px; margin: 14px 0 24px; }
+    .signup-note a { color: inherit; }
+    .signup-card { background: var(--bg-2); border: 1px solid var(--line); border-radius: 28px; padding: 32px; max-width: 560px; scroll-margin-top: 96px; }
+    .signup-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 26px; }
+    .signup-top .eyebrow { color: var(--accent-hi); font-size: 12px; }
+    .steps { display: inline-flex; gap: 6px; }
+    .steps i { width: 26px; height: 4px; border-radius: 2px; background: #2c2c31; display: block; transition: background-color 200ms var(--ease); }
+    .steps i.on { background: var(--accent); }
+    .signup-card h2 { font-size: clamp(1.5rem, 2.4vw, 1.9rem); font-weight: 700; line-height: 1.02; margin-bottom: 8px; }
+    .signup-lede { color: var(--text-2); font-size: 17px; margin-bottom: 22px; max-width: 46ch; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .field > span { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); }
+    .field input, .field textarea {
+      width: 100%; font: inherit; font-size: 16px; color: #fff;
+      background: #0d0d0f; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+      padding: 14px; transition: border-color 150ms var(--ease), box-shadow 150ms var(--ease);
+    }
+    .field textarea { resize: vertical; min-height: 92px; line-height: 1.5; }
+    .field input::placeholder, .field textarea::placeholder { color: #5f5f66; }
+    .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99,91,255,0.25); }
+    .field input[aria-invalid="true"] { border-color: var(--err); }
+    .field-err { font-size: 13px; color: var(--err); }
+    .field-wide { margin-bottom: 22px; }
+    .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+    .check-line { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; font-size: 14px; color: var(--text-2); cursor: pointer; }
+    .check-line input { width: 18px; height: 18px; margin: 1px 0 0; flex: none; accent-color: var(--accent); }
+    .check-line + .field-err { display: block; margin-top: 4px; }
+    #step-profile .check-line { margin-bottom: 18px; }
+    #step-profile .check-line + .field-err { margin: -14px 0 18px; }
+    /* Turnstile solo se ve si pide que la persona haga algo; si no, no ocupa lugar. */
+    .ts-box:not(:empty) { margin-top: 14px; }
+    .fine { margin-top: 16px; font-size: 13px; color: var(--text-3); }
+    .fine a { text-decoration: underline; text-underline-offset: 3px; }
+    .fine a:hover { color: var(--text); }
+    .field-hint { font-size: 13px; color: var(--text-3); }
+    .form-msg { margin-top: 16px; font-size: 14px; font-weight: 500; }
+    .form-msg.err { color: var(--err); }
+    .form-msg a { text-decoration: underline; text-underline-offset: 3px; }
+    .form-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .legend-hint { font-weight: 500; letter-spacing: 0; text-transform: none; font-size: 13px; margin-left: 6px; }
+    .levels .field-err { display: block; margin-top: 8px; }
+    .topic-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .topic { position: relative; cursor: pointer; }
+    .topic input { position: absolute; opacity: 0; pointer-events: none; }
+    .topic span { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 16px; border-radius: 999px; font-size: 15px; font-weight: 500; color: #fff; background: #0d0d0f; border: 1px solid rgba(255,255,255,0.12); transition: border-color 150ms var(--ease), background-color 150ms var(--ease); }
+    .topic:hover span { border-color: rgba(255,255,255,0.28); }
+    .topic input:checked + span { border-color: var(--accent); background: rgba(99,91,255,0.12); }
+    .topic input:checked + span::before { content: '✓'; margin-right: 6px; color: var(--accent-hi); }
+    .topic input:focus-visible + span { outline: 2px solid #fff; outline-offset: 2px; }
+    .topic-other { margin-top: 14px; }
+    .levels { border: 0; margin-bottom: 22px; }
+    .levels legend { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); margin-bottom: 12px; }
+    .level-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .level { position: relative; display: block; cursor: pointer; }
+    .level input { position: absolute; opacity: 0; pointer-events: none; }
+    .level-box { display: flex; flex-direction: column; gap: 2px; height: 100%; padding: 14px 16px; border-radius: 12px; background: #0d0d0f; border: 1px solid rgba(255,255,255,0.12); transition: border-color 150ms var(--ease), background-color 150ms var(--ease); }
+    .level:hover .level-box { border-color: rgba(255,255,255,0.28); }
+    .level input:checked + .level-box { border-color: var(--accent); background: rgba(99,91,255,0.12); }
+    .level input:focus-visible + .level-box { outline: 2px solid #fff; outline-offset: 2px; }
+    .level-name { font-size: 15px; font-weight: 600; color: #fff; }
+    .level-hint { font-size: 13px; color: var(--text-2); }
+    .done-mark { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(52,211,153,0.14); color: var(--ok); font-size: 24px; font-weight: 700; margin-bottom: 24px; }
+    @media (max-width: 600px) {
+      .signup-card { padding: 24px 20px; border-radius: 22px; }
+      .field-row { grid-template-columns: 1fr; }
+      .form-actions .btn { flex: 1 1 100%; }
+    }
+    @media (max-width: 420px) { .level-grid { grid-template-columns: 1fr; } }
+
+    /* ---------- Preguntas y pie: el cambio de ritmo ---------- */
+    .faq-sec { background: var(--soft-bg); color: var(--soft-text); padding-block: 120px; }
+    .faq-sec h2 { font-size: clamp(2.2rem, 4.4vw, 3.6rem); font-weight: 700; line-height: 1.04; margin-bottom: 48px; }
+    .faq { max-width: 820px; display: flex; flex-direction: column; }
+    .faq details { border-top: 1px solid var(--soft-line); }
+    .faq details:last-child { border-bottom: 1px solid var(--soft-line); }
+    .faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 24px 0; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: '+'; flex-shrink: 0; font-size: 26px; font-weight: 400; line-height: 1; color: var(--soft-text-2); transition: transform 300ms var(--ease); }
+    .faq details[open] summary::after { transform: rotate(45deg); }
+    .faq details p { padding: 0 0 26px; color: var(--soft-text-2); font-size: 17px; max-width: 64ch; }
+    .faq details p a { color: var(--soft-text); text-decoration: underline; text-underline-offset: 3px; }
+    footer { background: var(--soft-bg); color: var(--soft-text-2); padding-block: 48px 56px; border-top: 1px solid var(--soft-line); font-size: 15px; }
+    .foot { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+    .foot .brand { color: var(--soft-text); }
+    .foot nav { display: inline-flex; gap: 22px; flex-wrap: wrap; }
+    .foot nav a:hover { color: var(--soft-text); }
+    .foot-copy { margin-top: 22px; font-size: 13px; }
+
+    /* ---------- Entradas al aparecer (solo con JS) ---------- */
+    .js .reveal { opacity: 0; transform: translateY(24px); transition: opacity 600ms var(--ease), transform 600ms var(--ease); }
+    .js .reveal.in { opacity: 1; transform: none; }
+
+    /* ---------- Sin movimiento, si así lo pidió el sistema ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .js .reveal, .js .hero-in, .js .hero-phone.hero-in { opacity: 1; transform: none; animation: none; transition: opacity 150ms linear; }
+      .js .strings.draw line { animation: none; stroke-dashoffset: 0; stroke-dasharray: none; }
+      .strings.ring .pluck { animation: none; }
+      .manifesto .w { opacity: 1 !important; }
+      .tour-sticky .phone-screen .reel { transform: none; transition: opacity 150ms linear; }
+      .float-in, .ambient i { animation: none; }
+      .reel img { transition: none; }
+      .try-halo { transition: opacity 150ms linear; transform: none; }
+      .nav, .nav.away { transform: none; }
+    }
+  </style>
+</head>
+<body>
+<script>document.documentElement.className += ' js';</script>
+
+<!-- ========== NAV ========== -->
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top" aria-label="Fretwise, inicio">
+      <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
+        <rect width="64" height="64" rx="14" fill="#1b1b1e"/>
+        <g stroke="#3a3a3a" stroke-width="1.5" stroke-linecap="round"><path d="M16 12v40M32 12v40M48 12v40"/></g>
+        <circle cx="16" cy="42" r="6" fill="#635BFF"/><circle cx="32" cy="30" r="6" fill="#fff"/><circle cx="48" cy="18" r="6" fill="#fff"/>
+      </svg>
+      <span class="brand-wm">fretwise</span>
+    </a>
+    <nav class="nav-right" aria-label="Navegación principal">
+      <a class="nav-link" href="#recorrido">Cómo funciona</a>
+      <a class="btn btn-primary nav-cta" href="#anotate" data-signup>Acceso anticipado</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ========== HERO ========== -->
+<section class="hero" aria-labelledby="hero-title">
+  <div class="ambient" aria-hidden="true"><i></i><i></i></div>
+  <svg class="strings draw" id="hero-strings" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
+    <line x1="0" y1="8"   x2="1000" y2="8"   pathLength="1" stroke-width="1"/>
+    <line x1="0" y1="29"  x2="1000" y2="29"  pathLength="1" stroke-width="1.2"/>
+    <line x1="0" y1="50"  x2="1000" y2="50"  pathLength="1" stroke-width="1.4"/>
+    <line x1="0" y1="71"  x2="1000" y2="71"  pathLength="1" stroke-width="1.7"/>
+    <line x1="0" y1="92"  x2="1000" y2="92"  pathLength="1" stroke-width="2" class="pluck"/>
+    <line x1="0" y1="113" x2="1000" y2="113" pathLength="1" stroke-width="2.4"/>
+  </svg>
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow hero-in">Teoría musical para guitarra</p>
+      <h1 id="hero-title"><span class="hero-in d1">Entiende la guitarra.</span><span class="hero-in d2">No la memorices.</span></h1>
+      <p class="hero-sub hero-in d3">Fretwise te muestra por qué cada nota, acorde y escala está donde está. Y te lo hace escuchar.</p>
+      <div class="signup-card hero-in d4" id="anotate">
+        <div class="signup-top">
+          <p class="eyebrow" id="signup-step">Paso 1 de 2</p>
+          <span class="steps" aria-hidden="true"><i class="on" id="bar-1"></i><i id="bar-2"></i></span>
+        </div>
+
+        <!-- Paso 1: nombre y mail. Se guarda apenas se manda. -->
+        <form id="step-join" novalidate>
+          <h2>Sé de los primeros.</h2>
+          <p class="signup-lede" id="join-lede">Te avisamos cuando abra el acceso.</p>
+          <div class="field-row">
+            <label class="field">
+              <span>Nombre</span>
+              <input name="name" autocomplete="given-name" maxlength="60" placeholder="Ej. Lucía" />
+            </label>
+            <label class="field">
+              <span>Email</span>
+              <input type="email" name="email" autocomplete="email" inputmode="email" maxlength="254" placeholder="tu@email.com" required aria-describedby="err-email" />
+              <small class="field-err" id="err-email" hidden></small>
+            </label>
+          </div>
+          <input type="text" class="hp" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" />
+          <label class="check-line"><input type="checkbox" name="age16" aria-describedby="err-age16" /><span>Tengo 16 años o más</span></label>
+          <small class="field-err" id="err-age16" hidden></small>
+          <div class="ts-box" id="ts-box"></div>
+          <button type="submit" class="btn btn-primary btn-block">Siguiente paso <span aria-hidden="true">→</span></button>
+          <p class="form-msg" role="status" aria-live="polite" hidden></p>
+          <p class="fine">Qué hacemos con tus datos y cómo darte de baja: <a href="/privacidad/">política de privacidad</a>.</p>
+        </form>
+
+        <!-- Paso 2: nivel y temas (obligatorios); Instagram y WhatsApp, opcionales. -->
+        <form id="step-profile" novalidate hidden>
+          <h2>Cuéntanos de ti.</h2>
+          <p class="signup-lede" id="profile-lede">Dos preguntas rápidas. Instagram y WhatsApp, solo si quieres.</p>
+          <fieldset class="levels" aria-describedby="err-level">
+            <legend>¿Cómo tocas hoy?</legend>
+            <div class="level-grid">
+              <label class="level"><input type="radio" name="level" value="empiezo" /><span class="level-box"><span class="level-name">Nivel cero</span><span class="level-hint">Nunca toqué o sé muy pocos acordes</span></span></label>
+              <label class="level"><input type="radio" name="level" value="canciones" /><span class="level-box"><span class="level-name">Básico</span><span class="level-hint">Toco canciones con acordes abiertos</span></span></label>
+              <label class="level"><input type="radio" name="level" value="soltura" /><span class="level-box"><span class="level-name">Intermedio</span><span class="level-hint">Me muevo por el mástil y sé algo de teoría</span></span></label>
+              <label class="level"><input type="radio" name="level" value="clases" /><span class="level-box"><span class="level-name">Doy clases</span><span class="level-hint">Enseño guitarra o música</span></span></label>
+            </div>
+            <small class="field-err" id="err-level" role="alert" hidden></small>
+          </fieldset>
+          <fieldset class="levels" aria-describedby="err-topics">
+            <legend>¿Qué te gustaría aprender? <span class="legend-hint">Elige todas las que quieras</span></legend>
+            <div class="topic-grid">
+              <label class="topic"><input type="checkbox" name="topic" value="acordes" /><span>Acordes y armonía</span></label>
+              <label class="topic"><input type="checkbox" name="topic" value="escalas" /><span>Escalas y modos</span></label>
+              <label class="topic"><input type="checkbox" name="topic" value="improvisar" /><span>Improvisar</span></label>
+              <label class="topic"><input type="checkbox" name="topic" value="mastil" /><span>Las notas en el mástil</span></label>
+              <label class="topic"><input type="checkbox" name="topic" value="oido" /><span>Entrenar el oído</span></label>
+              <label class="topic"><input type="checkbox" name="topic" value="ritmo" /><span>Ritmo</span></label>
+            </div>
+            <small class="field-err" id="err-topics" role="alert" hidden></small>
+            <label class="field topic-other">
+              <span>Otro (opcional)</span>
+              <input name="learn" maxlength="200" placeholder="Ej. tocar blues, leer partituras…" />
+            </label>
+          </fieldset>
+          <div class="field-row">
+            <label class="field">
+              <span>Instagram</span>
+              <input name="instagram" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="80" placeholder="@tuusuario" aria-describedby="err-instagram" />
+              <small class="field-err" id="err-instagram" hidden></small>
+            </label>
+            <label class="field">
+              <span>WhatsApp</span>
+              <input type="tel" name="whatsapp" autocomplete="tel" inputmode="tel" maxlength="24" placeholder="+54 9 11 5555 1234" aria-describedby="hint-whatsapp err-whatsapp" />
+              <small class="field-hint" id="hint-whatsapp">Opcional.</small>
+              <small class="field-err" id="err-whatsapp" hidden></small>
+            </label>
+          </div>
+          <label class="check-line"><input type="checkbox" name="contact" aria-describedby="err-contact" /><span>Pueden escribirme por Instagram o WhatsApp</span></label>
+          <small class="field-err" id="err-contact" hidden></small>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-block">Listo</button>
+          </div>
+          <p class="form-msg" role="status" aria-live="polite" hidden></p>
+          <p class="fine">Solo te escribimos por Instagram o WhatsApp si marcas la casilla.</p>
+        </form>
+
+        <!-- Listo. -->
+        <div id="step-done" hidden>
+          <div class="done-mark" aria-hidden="true">✓</div>
+          <h2 id="done-title" tabindex="-1">Estás en la lista.</h2>
+          <p class="signup-lede">Te escribimos cuando haya novedades. Mientras tanto, la app ya está abierta.</p>
+          <p class="form-msg" id="done-note" role="status" hidden></p>
+          <a class="btn btn-primary" href="/app/">Abrir Fretwise <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+      <p class="signup-note hero-in d4">Gratis y sin cuenta. Te escribimos solo para contarte novedades o preguntarte qué te sirve; la baja, cuando quieras, en <a href="mailto:fretwisesupport@gmail.com">fretwisesupport@gmail.com</a>.</p>
+      <div class="hero-ctas hero-in d4">
+        <a class="link" href="#recorrido">Ver cómo funciona <span aria-hidden="true">↓</span></a>
+      </div>
+    </div>
+    <div class="stage hero-phone hero-in" id="hero-stage">
+      <div class="rig" data-tilt="hero">
+        <figure class="phone">
+          <div class="phone-screen reel" data-reel="identify">
+            <img class="on" src="./shots/identificar.jpg" width="750" height="1400" alt="Fretwise en el teléfono: marcaste un acorde y te dice que es Cmaj7, mayor séptima." fetchpriority="high" />
+          </div>
+        </figure>
+        <div class="float" style="--x:-40%;--y:54%;--z:110px" aria-hidden="true"><div class="float-in" style="--t:6.5s">
+          <div class="tag big"><b>Cmaj7</b><small>mayor séptima</small><span class="degs"><span>1</span><span>3</span><span>5</span><span class="k">7</span></span></div>
+        </div></div>
+        <div class="float" style="--x:74%;--y:8%;--z:160px" aria-hidden="true"><div class="float-in" style="--t:7.5s;--d:-2s">
+          <span class="dots"><span class="dot n-c">C</span><span class="dot n-e">E</span><span class="dot n-g">G</span><span class="dot n-b">B</span></span>
+        </div></div>
+        <div class="float wide-only" style="--x:78%;--y:58%;--z:70px" aria-hidden="true"><div class="float-in" style="--t:8s;--d:-4s">
+          <span class="tag"><span class="k">I</span> V vi IV <small>C G Am F</small></span>
+        </div></div>
+        <div class="float" style="--x:-14%;--y:86%;--z:130px" aria-hidden="true"><div class="float-in" style="--t:7s;--d:-1s">
+          <span class="tag">Lidia <span class="k">#4</span></span>
+        </div></div>
+        <div class="float wide-only" style="--x:-8%;--y:-6%;--z:-90px" aria-hidden="true"><div class="float-in" style="--t:9s;--d:-3s">
+          <span class="tag"><small>tritono</small> Si – Fa</span>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== MANIFIESTO ========== -->
+<section class="manifesto" aria-label="Por qué existe Fretwise">
+  <div class="wrap">
+    <p id="manifesto">Durante años nos enseñaron la guitarra como un mapa para memorizar. Formas sueltas. Nombres sin razón. Fretwise parte de otra idea: <strong class="hl">si entiendes por qué suena, no lo olvidas.</strong></p>
+  </div>
+</section>
+
+<!-- ========== RECORRIDO ========== -->
+<section class="tour" id="recorrido" aria-label="Cómo funciona">
+  <div class="ambient" aria-hidden="true"><i></i><i></i></div>
+  <div class="wrap tour-grid">
+    <div class="tour-steps">
+      <article class="chapter" data-step="0">
+        <span class="ch-big num" aria-hidden="true">01</span>
+        <p class="eyebrow">01 · Identificar</p>
+        <h2>Toca. Fretwise te dice qué es.</h2>
+        <p>Marca los trastes en el diapasón y te nombra el acorde, con sus notas y sus grados. Sin buscar en tablas.</p>
+        <div class="stage"><div class="rig" data-tilt="chapter"><figure class="phone"><div class="phone-screen reel" data-reel="identify"><img class="on" src="./shots/identificar.jpg" width="750" height="1400" loading="lazy" alt="Identificar: el acorde marcado y su nombre, Cmaj7." /></div></figure></div></div>
+      </article>
+      <article class="chapter" data-step="1">
+        <span class="ch-big num" aria-hidden="true">02</span>
+        <p class="eyebrow">02 · Acordes</p>
+        <h2>Cada acorde, en todo el mástil.</h2>
+        <p>Elige un acorde y mira dónde vive en cada zona del diapasón. Y si quieres saber por qué suena así, te lo explica.</p>
+        <div class="stage"><div class="rig" data-tilt="chapter"><figure class="phone"><div class="phone-screen reel" data-reel="chords"><img class="on" src="./shots/acordes.jpg" width="750" height="1400" loading="lazy" alt="Acordes, ¿Por qué suena así?: entre C y Cm cambia una sola nota, la tercera." /></div></figure></div></div>
+      </article>
+      <article class="chapter" data-step="2">
+        <span class="ch-big num" aria-hidden="true">03</span>
+        <p class="eyebrow">03 · Escalas</p>
+        <h2>Los modos, por fin, distintos.</h2>
+        <p>Compara cada modo con su par y escucha la nota que le cambia el color. De la Lidia, la más brillante, a la Locria, la más oscura.</p>
+        <div class="stage"><div class="rig" data-tilt="chapter"><figure class="phone"><div class="phone-screen reel" data-reel="scales"><img class="on" src="./shots/escalas.jpg" width="750" height="1400" loading="lazy" alt="Escalas, Comparar, Paralelos: los modos de Do con su nota característica resaltada." /></div></figure></div></div>
+      </article>
+      <article class="chapter" data-step="3">
+        <span class="ch-big num" aria-hidden="true">04</span>
+        <p class="eyebrow">04 · Tonalidad</p>
+        <h2>El círculo de quintas, tocable.</h2>
+        <p>Elige una tonalidad y arma progresiones que se transportan solas. Pop, jazz, blues, andaluza.</p>
+        <div class="stage"><div class="rig" data-tilt="chapter"><figure class="phone"><div class="phone-screen reel" data-reel="key"><img class="on" src="./shots/tonalidad.jpg" width="750" height="1400" loading="lazy" alt="Tonalidad: la progresión pop en Do mayor, C G Am F, con sus notas en el mástil." /></div></figure></div></div>
+      </article>
+      <article class="chapter" data-step="4">
+        <span class="ch-big num" aria-hidden="true">05</span>
+        <p class="eyebrow">05 · Practicar</p>
+        <h2>Hasta que el diapasón sea tuyo.</h2>
+        <p>Entrena el mástil por niveles: notas, intervalos, tríadas y acordes, con explicación cuando fallas. Escalas y arpegios con tempo. Y con el micrófono o tu guitarra MIDI, marca en el mástil lo que tocas.</p>
+        <div class="stage"><div class="rig" data-tilt="chapter"><figure class="phone"><div class="phone-screen reel" data-reel="practice"><img class="on" src="./shots/practicar.jpg" width="750" height="1400" loading="lazy" alt="Practicar: el entrenador pregunta qué acorde es la forma marcada." /></div></figure></div></div>
+      </article>
+    </div>
+    <div class="tour-side" aria-hidden="true">
+      <div class="tour-sticky">
+        <div class="tour-index"><span class="num" id="tour-now">01</span><span class="tour-bar"><i id="tour-fill"></i></span><span class="num">05</span></div>
+        <div class="stage">
+          <div class="rig" data-tilt="tour">
+            <figure class="phone">
+              <div class="phone-screen" id="tour-screen">
+                <div class="reel live" data-reel="identify"><img class="on" src="./shots/identificar.jpg" width="750" height="1400" alt="" loading="lazy" /></div>
+                <div class="reel" data-reel="chords"><img class="on" src="./shots/acordes.jpg" width="750" height="1400" alt="" loading="lazy" /></div>
+                <div class="reel" data-reel="scales"><img class="on" src="./shots/escalas.jpg" width="750" height="1400" alt="" loading="lazy" /></div>
+                <div class="reel" data-reel="key"><img class="on" src="./shots/tonalidad.jpg" width="750" height="1400" alt="" loading="lazy" /></div>
+                <div class="reel" data-reel="practice"><img class="on" src="./shots/practicar.jpg" width="750" height="1400" alt="" loading="lazy" /></div>
+              </div>
+            </figure>
+            <!-- Las tarjetas de cada capítulo: en el celular se copian debajo de su capítulo. -->
+            <div class="set on" data-set="0">
+              <div class="float" style="--x:-34%;--y:18%;--z:120px"><div class="float-in" style="--t:6.5s"><div class="tag big"><b>Cmaj7</b><small>mayor séptima</small><span class="degs"><span>1</span><span>3</span><span>5</span><span class="k">7</span></span></div></div></div>
+              <div class="float" style="--x:70%;--y:64%;--z:150px"><div class="float-in" style="--t:7.5s;--d:-2s"><span class="dots"><span class="dot n-c">C</span><span class="dot n-e">E</span><span class="dot n-g">G</span><span class="dot n-b">B</span></span></div></div>
+            </div>
+            <div class="set" data-set="1">
+              <div class="float" style="--x:-36%;--y:22%;--z:120px"><div class="float-in" style="--t:7s"><div class="tag big"><b>C → Cm</b><small>cambia una sola nota</small></div></div></div>
+              <div class="float" style="--x:66%;--y:60%;--z:150px"><div class="float-in" style="--t:8s;--d:-3s"><span class="tag">la 3ra baja <span class="k">un traste</span></span></div></div>
+            </div>
+            <div class="set" data-set="2">
+              <div class="float" style="--x:-34%;--y:20%;--z:120px"><div class="float-in" style="--t:6.8s"><div class="tag big"><b>Dórica</b><small>menor con 6</small><span class="degs"><span>1</span><span>2</span><span>b3</span><span>4</span><span>5</span><span class="k">6</span><span>b7</span></span></div></div></div>
+              <div class="float" style="--x:72%;--y:66%;--z:150px"><div class="float-in" style="--t:7.6s;--d:-2s"><span class="tag">Lidia <span class="k">#4</span></span></div></div>
+            </div>
+            <div class="set" data-set="3">
+              <div class="float" style="--x:-32%;--y:18%;--z:120px"><div class="float-in" style="--t:7s"><div class="tag big"><b>I V vi IV</b><small>C · G · Am · F</small></div></div></div>
+              <div class="float" style="--x:70%;--y:62%;--z:150px"><div class="float-in" style="--t:8s;--d:-1s"><span class="tag">Andaluza <small>i bVII bVI V</small></span></div></div>
+            </div>
+            <div class="set" data-set="4">
+              <div class="float" style="--x:-36%;--y:20%;--z:120px"><div class="float-in" style="--t:6.6s"><div class="tag big"><b>¿Qué acorde es?</b><small>nivel 1 · tríadas</small></div></div></div>
+              <div class="float" style="--x:68%;--y:64%;--z:150px"><div class="float-in" style="--t:7.8s;--d:-2s"><span class="tag">Era Cm <span class="degs"><span>1</span><span class="k">b3</span><span>5</span></span></span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="wrap next-cta"><a class="btn btn-primary" href="#anotate" data-signup>Quiero acceso anticipado</a></div>
+</section>
+
+<!-- ========== ESCÚCHALO: Piko explica cinco sonidos conocidos, en una línea cada uno ========== -->
+<section class="why" id="escuchalo" aria-labelledby="why-title">
+  <div class="wrap why-grid">
+    <div class="reveal">
+      <p class="eyebrow">Escúchalo</p>
+      <h2 id="why-title">Sonidos que ya conoces. Y por qué suenan así.</h2>
+    </div>
+    <div class="why-play reveal">
+    <ul class="sounds">
+      <li><button type="button" class="sound" data-sound="0"><span class="sound-play" aria-hidden="true">▶</span><b>G7 → C</b><small>La resolución</small></button></li>
+      <li><button type="button" class="sound" data-sound="1"><span class="sound-play" aria-hidden="true">▶</span><b>Am · G · F · E</b><small>La andaluza</small></button></li>
+      <li><button type="button" class="sound" data-sound="2"><span class="sound-play" aria-hidden="true">▶</span><b>C → Cmaj7</b><small>El color lo-fi</small></button></li>
+      <li><button type="button" class="sound" data-sound="3"><span class="sound-play" aria-hidden="true">▶</span><b>La dórica</b><small>Menor, pero menos triste</small></button></li>
+      <li><button type="button" class="sound" data-sound="4"><span class="sound-play" aria-hidden="true">▶</span><b>E5</b><small>El power chord</small></button></li>
+    </ul>
+      <div class="why-say"><picture class="why-face"><source media="(prefers-reduced-motion: reduce)" srcset="/app/profes/piko-normal-dark.svg" /><img src="/app/profes/piko-normal-dark-animated.svg" width="56" height="56" alt="" /></picture><p id="why-line" aria-live="polite">Soy Piko. Toca uno: suena, y te digo por qué.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== PRUÉBALO ========== -->
+<section class="try" id="pruébalo" aria-labelledby="try-title">
+  <div class="try-halo" aria-hidden="true"></div>
+  <div class="wrap" style="position:relative">
+    <h2 id="try-title">No te lo contamos. Tócalo.</h2>
+    <p class="lead">Esta es la app real. Marca un acorde.</p>
+    <div class="try-wide">
+      <figure class="phone live">
+        <div class="phone-screen" id="live-screen">
+          <img src="./shots/identificar.jpg" width="750" height="1400" alt="" loading="lazy" />
+        </div>
+      </figure>
+      <div class="chips" role="group" aria-label="Pantalla de la app">
+        <button type="button" class="chip" data-tab="identify" aria-pressed="true">Identificar</button>
+        <button type="button" class="chip" data-tab="chords" aria-pressed="false">Acordes</button>
+        <button type="button" class="chip" data-tab="scales" aria-pressed="false">Escalas</button>
+        <button type="button" class="chip" data-tab="key" aria-pressed="false">Tonalidad</button>
+        <button type="button" class="chip" data-tab="practice" aria-pressed="false">Practicar</button>
+      </div>
+    </div>
+    <div class="try-narrow">
+      <a class="btn btn-primary" href="/app/">Abrir Fretwise <span aria-hidden="true">→</span></a>
+      <div class="stage"><div class="rig" data-tilt="chapter"><figure class="phone"><div class="phone-screen reel" data-reel="identify"><img class="on" src="./shots/identificar.jpg" width="750" height="1400" loading="lazy" alt="Fretwise en el teléfono." /></div></figure></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== TU EQUIPO: los mismos cuatro profes que la app. "Avísame" lleva al formulario y recuerda qué pidió. ========== -->
+<section class="team" id="equipo" aria-labelledby="team-title">
+  <div class="wrap">
+    <p class="eyebrow">Tu equipo</p>
+    <h2 id="team-title">Cuatro profes. Ninguno se inventa nada.</h2>
+    <p class="team-lead">Cada uno hace una cosa. Piko, Eko y Miko ya están en la app, con el mismo motor de teoría que el resto; Tiko llega cuando esté listo.</p>
+    <div class="team-grid">
+      <button type="button" class="profe reveal" data-profe="piko" aria-controls="talk"><picture><source media="(prefers-reduced-motion: reduce)" srcset="/app/profes/piko-normal-dark.svg" /><img src="/app/profes/piko-normal-dark-animated.svg" width="72" height="72" alt="" /></picture><b>Piko</b><span class="d">Te explica por qué suena así cada nota y cada acorde.</span><small>Ya está en la app · Tócalo</small></button>
+      <button type="button" class="profe reveal" data-profe="eko" aria-controls="talk"><picture><source media="(prefers-reduced-motion: reduce)" srcset="/app/profes/eko-normal-dark.svg" /><img src="/app/profes/eko-normal-dark-animated.svg" width="72" height="72" alt="" /></picture><b>Eko</b><span class="d">Te vuelve a preguntar lo que aprendiste, para que no se olvide.</span><small>Ya está en la app · Tócalo</small></button>
+      <button type="button" class="profe reveal" data-profe="miko" aria-controls="talk"><picture><source media="(prefers-reduced-motion: reduce)" srcset="/app/profes/miko-normal-dark.svg" /><img src="/app/profes/miko-normal-dark-animated.svg" width="72" height="72" alt="" /></picture><b>Miko</b><span class="d">Te escucha tocar y marca en el mástil las notas que suenan.</span><small>Ya está en la app · Tócalo</small></button>
+      <button type="button" class="profe soon reveal" data-profe="tiko" aria-controls="talk"><picture><source media="(prefers-reduced-motion: reduce)" srcset="/app/profes/tiko-normal-dark.svg" /><img src="/app/profes/tiko-normal-dark-animated.svg" width="72" height="72" alt="" /></picture><b>Tiko</b><span class="d">Va a armarte 10 minutos por día y cuidar tu racha.</span><small>En camino · Tócalo</small></button>
+    </div>
+    <!-- La charla: frases fijas y botones para responder, como en la app. Nada se escribe y nada se inventa en el momento. -->
+    <div class="talk" id="talk">
+      <img class="talk-face" id="talk-face" src="/app/profes/piko-normal-dark-animated.svg" width="64" height="64" alt="" />
+      <div class="talk-body">
+        <b class="talk-who" id="talk-who">Tu equipo</b>
+        <p class="talk-say" id="talk-say" aria-live="polite">Toca a cualquiera de los cuatro para hablar con él. Respondes con botones: no hay nada que escribir.</p>
+        <div class="talk-actions" id="talk-actions"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== FUNDADORES (oculto hasta la preventa: data-presale="on" lo muestra) ========== -->
+<section class="who" id="fundadores" data-presale="off" aria-labelledby="founders-title">
+  <div class="wrap">
+    <h2 id="founders-title">Miembros fundadores.</h2>
+    <p class="lead">Los primeros en sumarse pagan un precio que no se repite y deciden qué se construye después.</p>
+    <p class="fig"><b>{{PRECIO_FUNDADOR}}</b></p>
+    <a class="btn btn-primary" href="#anotate" data-signup>Reservar mi lugar</a>
+  </div>
+</section>
+
+<!-- ========== Q&A ========== -->
+<section class="faq-sec" id="qa" aria-labelledby="faq-title">
+  <div class="wrap">
+    <h2 id="faq-title">Q&amp;A</h2>
+    <div class="faq">
+      <details><summary>¿Qué es el acceso anticipado?</summary><p>La app ya se usa gratis. Si te anotas, te avisamos primero cuando haya algo nuevo para probar, como Tiko, y te preguntamos qué te sirve: lo que contestes decide qué se hace después.</p></details>
+      <details><summary>¿Es gratis?</summary><p>Sí. La app es gratis y se usa sin cuenta. Si más adelante hay una versión paga, los anotados se enteran primero.</p></details>
+      <details><summary>¿Tengo que instalar algo?</summary><p>No: se abre en el navegador. En el teléfono, si quieres, la instalas desde el navegador (en iPhone: Compartir → «Agregar a inicio»). Queda con su ícono y abre sin conexión.</p></details>
+      <details><summary>¿Sirve si recién empiezo?</summary><p>Sí. Hay lecciones cortas, con Piko explicando cada paso, y un desafío de cinco preguntas por día con Eko. Y si un botón no se entiende, el profe de la esquina te lo explica. No hace falta saber teoría para empezar.</p></details>
+      <details><summary>¿Los profes son una inteligencia artificial?</summary><p>No. Lo que dicen sale del mismo motor de teoría que el resto de la app, y respondes con botones: no hay chat libre ni respuestas inventadas en el momento.</p></details>
+      <details><summary>¿Y si ya sé teoría?</summary><p>También. Nombra inversiones y tensiones, escribe cada escala por grado y te muestra qué tensiones admite cada acorde de la tonalidad.</p></details>
+      <details><summary>¿Sirve para dar clases?</summary><p>Sí. Cada forma tiene su link: lo mandas y el alumno ve exactamente la misma en su pantalla.</p></details>
+      <details><summary>¿En qué idioma está?</summary><p>En castellano. Los acordes van en cifrado americano, el de los cancioneros: C es do, D es re, y así.</p></details>
+      <details><summary>¿Qué pasa con lo que toco?</summary><p>Hoy tu progreso se guarda en tu dispositivo: la app corre en el navegador y se usa sin cuenta. Si activas Escuchar, el sonido del micrófono se analiza en tu dispositivo: no se graba ni se envía.</p></details>
+      <details><summary>¿Qué hacen con mis datos si me anoto?</summary><p>Guardamos lo que escribiste en el formulario y lo usamos para contactarte sobre Fretwise. Para darte de baja, responde cualquier mensaje o escribe a <a href="mailto:fretwisesupport@gmail.com">fretwisesupport@gmail.com</a>. El detalle está en la <a href="/privacidad/">política de privacidad</a>.</p></details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <span class="brand">
+        <svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
+          <rect width="64" height="64" rx="14" fill="#111111"/>
+          <g stroke="#3a3a3a" stroke-width="1.5" stroke-linecap="round"><path d="M16 12v40M32 12v40M48 12v40"/></g>
+          <circle cx="16" cy="42" r="6" fill="#635BFF"/><circle cx="32" cy="30" r="6" fill="#fff"/><circle cx="48" cy="18" r="6" fill="#fff"/>
+        </svg>
+        <span class="brand-wm">fretwise</span>
+      </span>
+      <nav aria-label="Enlaces del pie">
+        <a href="/app/">Abrir la app</a>
+        <a href="#qa">Q&amp;A</a>
+        <a href="#anotate" data-signup>Acceso anticipado</a>
+        <a href="/privacidad/">Privacidad</a>
+      </nav>
+    </div>
+    <p class="foot-copy">Hecho por guitarristas, para guitarristas. © 2026 Fretwise · <a href="mailto:fretwisesupport@gmail.com">fretwisesupport@gmail.com</a></p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasIO = 'IntersectionObserver' in window;
+
+  /* ================= Nav: fondo al bajar; se esconde al bajar rápido ================= */
+  var nav = document.getElementById('nav');
+  var lastY = 0, ticking = false;
+  function onScroll() {
+    var y = window.scrollY;
+    nav.classList.toggle('scrolled', y > 80);
+    if (!reduced) nav.classList.toggle('away', y > 600 && y - lastY > 12);
+    if (y < lastY) nav.classList.remove('away');
+    lastY = y;
+    paintManifesto();
+    ticking = false;
+  }
+  window.addEventListener('scroll', function () {
+    if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+  }, { passive: true });
+
+  /* ================= Hero: al terminar de dibujarse, vibra la quinta cuerda ================= */
+  var strings = document.getElementById('hero-strings');
+  if (!reduced) setTimeout(function () { strings.classList.add('ring'); }, 1100);
+
+  /* ================= Manifiesto: palabra por palabra, con el scroll ================= */
+  var man = document.getElementById('manifesto');
+  var words = [];
+  (function split(node) {
+    Array.prototype.slice.call(node.childNodes).forEach(function (n) {
+      if (n.nodeType === 3) {
+        var frag = document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(function (part) {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.appendChild(document.createTextNode(part)); return; }
+          var s = document.createElement('span');
+          s.className = 'w';
+          s.textContent = part;
+          words.push(s);
+          frag.appendChild(s);
+        });
+        n.parentNode.replaceChild(frag, n);
+      } else if (n.nodeType === 1) {
+        split(n);
+      }
+    });
+  })(man);
+  function paintManifesto() {
+    if (reduced) return;
+    var r = man.getBoundingClientRect();
+    var vh = window.innerHeight;
+    // Arranca cuando el texto asoma por abajo; termina cuando su centro pasa el 45% de la pantalla.
+    var p = (vh * 0.9 - r.top) / (vh * 0.9 - vh * 0.45 + r.height / 2);
+    p = Math.max(0, Math.min(1, p));
+    var lit = p * words.length;
+    for (var i = 0; i < words.length; i++) {
+      words[i].style.opacity = String(0.2 + 0.8 * Math.max(0, Math.min(1, lit - i)));
+    }
+  }
+  paintManifesto();
+
+  /* ================= Pantallas que corren: cuadros reales de la app ================= */
+  // [cuadros, ms por cuadro]. El primero ya está en la página; el resto se pide al verse.
+  var REELS = {
+    identify: [['identificar', 'id-am7', 'id-g7', 'id-c'], 1500],
+    chords:   [['acordes', 'acordes-cm'], 1900],
+    scales:   [['escalas', 'escalas-rel'], 2200],
+    key:      [['tonalidad', 'ton-1', 'ton-2', 'ton-3'], 1000],
+    practice: [['practicar', 'practicar-ok'], 2000]
+  };
+  function Reel(el) { this.el = el; this.cfg = REELS[el.getAttribute('data-reel')]; this.i = 0; this.timer = 0; this.frames = null; el.__reel = this; }
+  Reel.prototype.play = function () {
+    if (reduced || this.timer || !this.cfg) return;
+    var self = this;
+    if (!this.frames) {
+      this.frames = [this.el.querySelector('img')];
+      this.cfg[0].slice(1).forEach(function (name) {
+        var img = document.createElement('img');
+        img.src = './shots/' + name + '.jpg'; img.width = 750; img.height = 1400; img.alt = ''; img.decoding = 'async';
+        self.el.appendChild(img);
+        self.frames.push(img);
+      });
+    }
+    this.timer = setInterval(function () {
+      self.frames[self.i].classList.remove('on');
+      self.i = (self.i + 1) % self.frames.length;
+      self.frames[self.i].classList.add('on');
+    }, this.cfg[1]);
+  };
+  Reel.prototype.stop = function () { clearInterval(this.timer); this.timer = 0; };
+
+  var lone = Array.prototype.map.call(document.querySelectorAll('.phone-screen.reel'), function (el) { return new Reel(el); });
+  var tourReels = Array.prototype.map.call(document.querySelectorAll('#tour-screen .reel'), function (el) { return new Reel(el); });
+  if (hasIO) {
+    var vo = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) e.target.__reel.play(); else e.target.__reel.stop(); });
+    }, { threshold: 0.2 });
+    lone.forEach(function (r) { vo.observe(r.el); });
+  }
+
+  /* ================= Recorrido: el capítulo del medio manda en el teléfono ================= */
+  var chapters = document.querySelectorAll('.chapter');
+  var sets = document.querySelectorAll('.tour-sticky .set');
+  var nowEl = document.getElementById('tour-now');
+  var fill = document.getElementById('tour-fill');
+  var tourScreen = document.getElementById('tour-screen');
+  var current = 0, tourSeen = false;
+  function step(i) {
+    current = i;
+    tourReels.forEach(function (r, k) {
+      r.el.classList.toggle('live', k === i);
+      if (k === i && tourSeen) r.play(); else r.stop();
+    });
+    for (var k = 0; k < sets.length; k++) sets[k].classList.toggle('on', k === i);
+    nowEl.textContent = '0' + (i + 1);
+    fill.style.transform = 'scaleY(' + ((i + 1) / chapters.length) + ')';
+    kick();
+  }
+  if (hasIO) {
+    new IntersectionObserver(function (entries) {
+      tourSeen = entries[0].isIntersecting;
+      if (tourSeen) tourReels[current].play(); else tourReels.forEach(function (r) { r.stop(); });
+    }, { threshold: 0.2 }).observe(tourScreen);
+  }
+  // En el celular, cada capítulo lleva debajo las mismas tarjetas que el teléfono fijo.
+  Array.prototype.forEach.call(chapters, function (c) {
+    var set = sets[Number(c.getAttribute('data-step'))];
+    var rig = c.querySelector('.rig');
+    if (set && rig) { var copy = set.cloneNode(true); copy.classList.add('on'); copy.setAttribute('aria-hidden', 'true'); rig.appendChild(copy); }
+  });
+
+  /* ================= 3D: espesor del teléfono y giro con el scroll y el puntero ================= */
+  Array.prototype.forEach.call(document.querySelectorAll('.stage .phone'), function (p) {
+    for (var i = 5; i >= 1; i--) {
+      var l = document.createElement('i');
+      l.className = 'layer';
+      l.style.setProperty('--i', i);
+      p.insertBefore(l, p.firstChild);
+    }
+  });
+  var TOUR_POSE = [[-16, 6], [14, 4], [-12, 7], [16, 3], [-9, 5]]; // [giro, inclinación] por capítulo
+  var rigs = Array.prototype.map.call(document.querySelectorAll('.rig'), function (el) {
+    return { el: el, kind: el.getAttribute('data-tilt'), ry: -14, rx: 6, sheen: el.querySelector('.phone-screen') };
+  });
+  var px = 0, py = 0, running = false;
+  var finePointer = window.matchMedia('(pointer: fine)').matches;
+  function target(r, vh) {
+    var b = r.el.getBoundingClientRect();
+    if (b.bottom < -200 || b.top > vh + 200) return null;
+    var t;
+    if (r.kind === 'hero') {
+      var p = Math.max(0, Math.min(1, window.scrollY / (vh * 0.9)));
+      t = [-22 + 18 * p, 9 - 7 * p];
+    } else if (r.kind === 'tour') {
+      t = TOUR_POSE[current].slice();
+    } else {
+      // Gira al cruzar la pantalla: entra mirando a un lado y sale mirando al otro.
+      var q = Math.max(-1, Math.min(1, ((b.top + b.height / 2) / vh - 0.5) * 2));
+      t = [-18 * q, 5];
+    }
+    t[0] += px * 7;
+    t[1] -= py * 5;
+    return t;
+  }
+  function tiltFrame() {
+    var vh = window.innerHeight, moving = false;
+    rigs.forEach(function (r) {
+      var t = target(r, vh);
+      if (!t) return;
+      var dy = t[0] - r.ry, dx = t[1] - r.rx;
+      if (Math.abs(dy) > 0.02 || Math.abs(dx) > 0.02) moving = true;
+      r.ry += dy * 0.08; r.rx += dx * 0.08;
+      r.el.style.transform = 'rotateX(' + r.rx.toFixed(2) + 'deg) rotateY(' + r.ry.toFixed(2) + 'deg)';
+      if (r.sheen) r.sheen.style.setProperty('--sheen', (60 + r.ry * 2.2).toFixed(1) + '%');
+    });
+    running = moving;
+    if (moving) requestAnimationFrame(tiltFrame);
+  }
+  function kick() { if (!reduced && !running) { running = true; requestAnimationFrame(tiltFrame); } }
+  if (reduced) {
+    rigs.forEach(function (r) { r.el.style.transform = 'rotateX(4deg) rotateY(-10deg)'; });
+  } else {
+    window.addEventListener('scroll', kick, { passive: true });
+    window.addEventListener('resize', kick);
+    if (finePointer) {
+      window.addEventListener('pointermove', function (e) {
+        px = (e.clientX / window.innerWidth - 0.5) * 2;
+        py = (e.clientY / window.innerHeight - 0.5) * 2;
+        kick();
+      }, { passive: true });
+    }
+    kick();
+  }
+  if (hasIO) {
+    var co = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) step(Number(e.target.getAttribute('data-step'))); });
+    }, { rootMargin: '-50% 0px -50% 0px' });
+    Array.prototype.forEach.call(chapters, function (c) { co.observe(c); });
+  }
+
+  /* ================= Escúchalo: suena solo si se pide, y Piko dice por qué ================= */
+  var hz = function (m) { return 440 * Math.pow(2, (m - 69) / 12); };
+  // Cada sonido: [notas MIDI, cuándo empieza, cuánto dura] y la línea de Piko.
+  var SOUNDS = [
+    [[[43, 59, 62, 65], 0, 1.3], [[48, 60, 64, 67, 72], 1.35, 2.2]],
+    [[[45, 57, 60, 64], 0, 1], [[43, 55, 59, 62], 0.9, 1], [[41, 53, 57, 60], 1.8, 1], [[40, 52, 56, 59], 2.7, 1], [[45, 57, 60, 64], 3.6, 1.8]],
+    [[[48, 55, 60, 64], 0, 1.2], [[48, 55, 59, 64], 1.3, 2.2]],
+    [[[45], 0, 3]].concat([57, 59, 60, 62, 64, 66, 67, 69].map(function (m, k) { return [[m], 0.2 + k * 0.3, 0.55]; })),
+    [[[40, 47, 52], 0, 0.5], [[40, 47, 52], 0.6, 1.8]]
+  ];
+  var LINES = [
+    'G7 tiene Si y Fa. Si sube medio tono a Do y Fa baja medio tono a Mi: por eso pide ir a C.',
+    'E es mayor y trae Sol#, que sube medio tono a La. Por eso la vuelta a Am cierra tan fuerte.',
+    'A C le sumas Si, la séptima mayor, medio tono por debajo de la raíz. Queda suave y abierto.',
+    'Es la menor natural con la sexta mayor (Fa#). Esa nota la hace menos triste.',
+    'Raíz y quinta, sin tercera: ni mayor ni menor. Por eso aguanta bien la distorsión.'
+  ];
+  var ctx = null, playing = null;
+  var soundBtns = Array.prototype.slice.call(document.querySelectorAll('[data-sound]'));
+  var whyLine = document.getElementById('why-line');
+  soundBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var i = Number(btn.getAttribute('data-sound'));
+      soundBtns.forEach(function (b) { b.classList.toggle('on', b === btn); });
+      whyLine.textContent = LINES[i];
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!ctx) ctx = new AC();
+      if (ctx.state === 'suspended') ctx.resume();
+      // Un sonido a la vez: el anterior se apaga en 80 ms.
+      if (playing) { playing.gain.setTargetAtTime(0, ctx.currentTime, 0.02); }
+      var out = playing = ctx.createGain();
+      out.connect(ctx.destination);
+      var t0 = ctx.currentTime + 0.05;
+      SOUNDS[i].forEach(function (c) {
+        c[0].forEach(function (m, k) {
+          var o = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+          o.type = 'triangle'; o.frequency.value = hz(m);
+          f.type = 'lowpass'; f.frequency.value = 2200;
+          var at = t0 + c[1] + k * 0.018;
+          g.gain.setValueAtTime(0, at);
+          g.gain.linearRampToValueAtTime(0.12, at + 0.012);
+          g.gain.exponentialRampToValueAtTime(0.0008, at + c[2]);
+          o.connect(f); f.connect(g); g.connect(out);
+          o.start(at); o.stop(at + c[2] + 0.05);
+        });
+      });
+    });
+  });
+
+  /* ================= Entradas al aparecer (una sola vez) ================= */
+  var onceTargets = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  onceTargets.push(document.getElementById('pruébalo'));
+  function enter(el) {
+    if (el.id === 'pruébalo') { el.classList.add('in'); return; }
+    el.classList.add('in');
+  }
+  if (hasIO) {
+    var ro = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { enter(e.target); ro.unobserve(e.target); } });
+    }, { threshold: 0.25 });
+    onceTargets.forEach(function (el) { ro.observe(el); });
+  } else {
+    onceTargets.forEach(enter);
+  }
+
+  /* ================= Pruébalo: la app real, solo con lugar y cuando está por verse ================= */
+  var liveScreen = document.getElementById('live-screen');
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+  var wide = window.matchMedia('(min-width: 980px)');
+  var frame = null, tab = 'identify';
+  function appUrl(id) { return '/app/?tab=' + id; }
+  function mountFrame() {
+    if (frame || !wide.matches) return;
+    frame = document.createElement('iframe');
+    frame.title = 'Fretwise, app de demostración';
+    frame.setAttribute('allow', 'autoplay');
+    frame.style.opacity = '0';
+    frame.addEventListener('load', function () { frame.style.opacity = '1'; });
+    frame.src = appUrl(tab);
+    liveScreen.appendChild(frame);
+  }
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      tab = c.getAttribute('data-tab');
+      chips.forEach(function (x) { x.setAttribute('aria-pressed', x === c ? 'true' : 'false'); });
+      if (frame) frame.src = appUrl(tab); else mountFrame();
+    });
+  });
+  if (hasIO) {
+    new IntersectionObserver(function (entries, obs) {
+      if (entries.some(function (e) { return e.isIntersecting; })) { mountFrame(); if (frame) obs.disconnect(); }
+    }, { rootMargin: '100% 0px' }).observe(liveScreen);
+  } else {
+    mountFrame();
+  }
+  if (wide.addEventListener) wide.addEventListener('change', function () { if (wide.matches) mountFrame(); });
+
+  /* ================= Formulario (misma lógica que la versión anterior) ================= */
+
+  /* Apps Script que escribe cada respuesta en la planilla (backend/waitlist/). */
+  var ENDPOINT = 'https://script.google.com/macros/s/AKfycbynzYr3V5NLKERYuq3b275-XBFIKQXyGgF3-QnU_WIFV6pd-6mpvD8MTTrCxdhkxK7KVg/exec';
+
+  // Con ?prueba=1 en la dirección, todo va a la hoja "Prueba": así se prueba sin tocar la lista real.
+  var TEST = new URLSearchParams(location.search).get('prueba') === '1';
+
+  var loadedAt = Date.now();
+  var joinForm = document.getElementById('step-join');
+  var profileForm = document.getElementById('step-profile');
+  var done = document.getElementById('step-done');
+  var stepLabel = document.getElementById('signup-step');
+  var who = { email: '', key: '', name: '' };
+
+  var EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+  /*
+   * Turnstile de Cloudflare: un token por cada envío del paso 1, que el servidor
+   * verifica antes de guardar. Casi siempre es invisible; solo aparece si
+   * Cloudflare necesita que la persona toque algo. Se carga cuando el
+   * formulario se toca o se envía, no con la página: quien no lo usa no lo descarga.
+   * Con ?prueba=1 usa la clave de prueba de Cloudflare, que siempre aprueba.
+   */
+  var TURNSTILE_SITEKEY = TEST ? '1x00000000000000000000AA' : '0x4AAAAAAFeewBjNfaqt3VQi';
+  var turnstileReady = null;
+  function loadTurnstile() {
+    if (turnstileReady) return turnstileReady;
+    turnstileReady = new Promise(function (ok, no) {
+      var s = document.createElement('script');
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      s.async = true;
+      s.onload = function () { ok(window.turnstile); };
+      s.onerror = function () { turnstileReady = null; no(new Error('turnstile')); };
+      document.head.appendChild(s);
+    });
+    return turnstileReady;
+  }
+  var widget = null;
+  var waiter = null;
+  function settle(err, token) {
+    var w = waiter;
+    waiter = null;
+    if (!w) return;
+    clearTimeout(w.timer);
+    if (err) w.no(err); else w.ok(token);
+  }
+  /** Un token nuevo para este envío: cada uno sirve una sola vez. */
+  function getToken() {
+    return loadTurnstile().then(function (ts) {
+      return new Promise(function (ok, no) {
+        settle(new Error('replaced'));
+        // Si pide que la persona toque algo, se le da tiempo; si no aparece nunca, falla y se reintenta.
+        waiter = { ok: ok, no: no, timer: setTimeout(function () { settle(new Error('turnstile timeout')); }, 60000) };
+        if (widget === null) {
+          widget = ts.render('#ts-box', {
+            sitekey: TURNSTILE_SITEKEY,
+            execution: 'execute',
+            appearance: 'interaction-only',
+            language: 'es',
+            callback: function (token) { settle(null, token); },
+            'error-callback': function () { settle(new Error('turnstile')); return true; },
+            'expired-callback': function () { settle(new Error('turnstile expired')); }
+          });
+        } else {
+          ts.reset(widget);
+        }
+        ts.execute(widget);
+      });
+    });
+  }
+  // Recién cuando la persona toca el formulario: el formulario está arriba de todo y no se baja en cada visita.
+  joinForm.addEventListener('focusin', function () { loadTurnstile().catch(function () {}); });
+
+  // form.name es el nombre del formulario, no su campo "name": los campos van por aquí.
+  function field(form, n) { return form.elements.namedItem(n); }
+
+  function igHandle(v) {
+    var s = String(v || '').trim()
+      .replace(/^(https?:\/\/)?(www\.)?(instagram\.com|instagr\.am)\//i, '')
+      .replace(/[/?#].*$/, '').replace(/^@/, '');
+    return /^[A-Za-z0-9._]{1,30}$/.test(s) ? s : '';
+  }
+  function phoneOk(v) {
+    var s = String(v || '').trim();
+    if (/[^\d\s()+.\-]/.test(s)) return false;
+    var n = s.replace(/\D/g, '').length;
+    return n >= 8 && n <= 15;
+  }
+
+  function msg(form, text, isErr) {
+    var el = form.querySelector('.form-msg');
+    el.textContent = text;
+    el.className = 'form-msg' + (isErr ? ' err' : '');
+    el.hidden = !text;
+  }
+  function fieldErr(form, name, text) {
+    var input = form.querySelector('[name=' + name + ']');
+    var el = document.getElementById('err-' + name);
+    if (input) input.setAttribute('aria-invalid', text ? 'true' : 'false');
+    if (el) { el.textContent = text || ''; el.hidden = !text; }
+  }
+
+  /**
+   * "Avísame": qué quiere que le avisemos. Viene de la app (?quiere=) o de la
+   * sección Tu equipo; viaja con el alta y queda en la columna Quiere.
+   */
+  var WANTS = { compas: 'Tiko esté listo', academias: 'la versión para academias esté lista' };
+  var want = '';
+  function setWant(w) {
+    if (!Object.prototype.hasOwnProperty.call(WANTS, w)) return;
+    want = w;
+    var lede = document.getElementById('join-lede');
+    if (lede) lede.textContent = 'Te avisamos cuando ' + WANTS[w] + '.';
+  }
+  setWant(new URLSearchParams(location.search).get('quiere') || '');
+  var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function reach(el) { if (el) el.scrollIntoView({ behavior: calm ? 'auto' : 'smooth' }); }
+  function goNotify(w) {
+    setWant(w);
+    reach(document.getElementById('anotate'));
+    var email = document.querySelector('#step-join input[name="email"]');
+    if (email) setTimeout(function () { email.focus({ preventScroll: true }); }, 400);
+  }
+
+  /**
+   * La charla de Tu equipo: cada profe dice una frase fija y ofrece botones,
+   * como el profe que acompaña en la app (Companion.tsx). Sin texto libre ni IA.
+   */
+  var PROFES = { piko: 'Piko', eko: 'Eko', miko: 'Miko', tiko: 'Tiko' };
+  function talkTo(id, mood) {
+    var other = { label: 'Hablar con otro', run: function () { say(null, '¿Con quién quieres hablar?', Object.keys(PROFES).filter(function (k) { return k !== id; }).map(function (k) { return { label: PROFES[k], run: function () { talkTo(k); } }; })); } };
+    var app = { label: 'Abrir la app', run: function () { location.href = '/app/'; } };
+    var lines = {
+      piko: ['Soy Piko. Te explico por qué suena así cada nota y cada acorde, en cada lección. ¿Quieres ver un ejemplo?',
+        [{ label: 'Muéstrame', run: function () { reach(document.querySelector('.why')); } }, app, other]],
+      eko: ['Soy Eko. Te vuelvo a preguntar lo que ya viste, justo antes de que se te olvide. Cada día hay un desafío de cinco preguntas.',
+        [app, other]],
+      miko: ['Soy Miko. Activa Escuchar en Practicar, toca despacio, una nota a la vez, y te marco en el mástil lo que suena.',
+        [app, other]],
+      tiko: ['Soy Tiko. Voy a armarte 10 minutos por día con lo que te toca repasar. ¿Te aviso cuando esté listo?',
+        [{ label: 'Avísame', run: function () { talkTo('tiko', 'happy'); goNotify('compas'); } }, other]]
+    };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-profe]'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-profe') === id)); });
+    say(id, lines[id][0], lines[id][1], mood);
+  }
+  function say(id, text, actions, mood) {
+    var face = document.getElementById('talk-face');
+    if (id) face.src = '/app/profes/' + id + '-' + (mood || 'normal') + '-dark' + (calm ? '' : '-animated') + '.svg';
+    document.getElementById('talk-who').textContent = id ? PROFES[id] : 'Tu equipo';
+    document.getElementById('talk-say').textContent = text;
+    if (!id) Array.prototype.forEach.call(document.querySelectorAll('[data-profe]'), function (b) { b.setAttribute('aria-pressed', 'false'); });
+    var box = document.getElementById('talk-actions');
+    box.textContent = '';
+    actions.forEach(function (a) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = a.label;
+      // El botón tocado desaparece con la respuesta: el foco pasa a la primera opción nueva, no al principio de la página.
+      b.addEventListener('click', function () {
+        a.run();
+        if ((!document.activeElement || document.activeElement === document.body) && box.firstChild) box.firstChild.focus({ preventScroll: true });
+      });
+      box.appendChild(b);
+    });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-profe]'), function (b) {
+    b.addEventListener('click', function () {
+      talkTo(b.getAttribute('data-profe'));
+      var talk = document.getElementById('talk');
+      if (talk.getBoundingClientRect().top > innerHeight - 120) reach(talk);
+    });
+  });
+  if (calm) document.getElementById('talk-face').src = '/app/profes/piko-normal-dark.svg';
+
+  function context() {
+    var p = new URLSearchParams(location.search);
+    var ref = '';
+    try { if (document.referrer) { var h = new URL(document.referrer).hostname; if (h !== location.hostname) ref = h; } } catch (e) {}
+    return {
+      source: p.get('utm_source') || '',
+      campaign: p.get('utm_campaign') || '',
+      content: p.get('utm_content') || '',
+      want: want,
+      referrer: ref,
+      device: window.matchMedia('(pointer: coarse)').matches ? 'phone' : 'desktop',
+      elapsed: Date.now() - loadedAt,
+      test: TEST
+    };
+  }
+
+  /** Si Apps Script no contesta en este tiempo, se corta y se reintenta: nadie espera sin fin. */
+  var TIMEOUT_MS = 15000;
+  function sendOnce(payload) {
+    var ctl = new AbortController();
+    var timer = setTimeout(function () { ctl.abort(); }, TIMEOUT_MS);
+    // text/plain la deja como pedido "simple": sin preflight, y Apps Script contesta legible.
+    return fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(payload), redirect: 'follow', signal: ctl.signal })
+      .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+      .then(function (res) { clearTimeout(timer); return res; }, function (err) { clearTimeout(timer); throw err; });
+  }
+
+  /*
+   * En un pico (un Reel que anda bien) el servidor contesta "ocupado", o la red
+   * falla un momento: se reintenta solo, esperando cada vez más. Cada espera
+   * lleva un poco de azar, para que mil personas no reintenten en el mismo
+   * instante. Si igual no sale, falla, y quien llamó lo guarda para después.
+   * El paso 1 pide un token de Turnstile nuevo en cada intento.
+   */
+  var WAITS = [1000, 3000, 7000];
+  function send(payload, onRetry) {
+    var attempt = 0;
+    function go() {
+      var ready = payload.step === 'join'
+        ? getToken().then(function (t) { payload.token = t; })
+        : Promise.resolve();
+      return ready.then(function () { return sendOnce(payload); }).then(function (res) {
+        if (res && res.error === 'busy') throw new Error('busy');
+        return res;
+      }).catch(function (err) {
+        if (attempt >= WAITS.length) throw err;
+        var wait = WAITS[attempt++] * (0.75 + Math.random() * 0.5);
+        if (onRetry) onRetry(attempt);
+        return new Promise(function (ok) { setTimeout(ok, wait); }).then(go);
+      });
+    }
+    return go();
+  }
+
+  /* Lo que no se pudo mandar queda en este navegador y sale solo en la próxima visita. */
+  var PENDING = 'fretwise:pending';
+  function pendingList() {
+    try { var v = JSON.parse(localStorage.getItem(PENDING) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+  }
+  function savePending(list) {
+    try {
+      if (list.length) localStorage.setItem(PENDING, JSON.stringify(list.slice(-5)));
+      else localStorage.removeItem(PENDING);
+      return true;
+    } catch (e) { return false; }
+  }
+  function keepForLater(payload) {
+    var list = pendingList();
+    list.push(payload);
+    return savePending(list);
+  }
+  var flushing = false;
+  function flushPending() {
+    var list = pendingList();
+    if (flushing || !list.length) return;
+    flushing = true;
+    var left = [];
+    list.reduce(function (chain, payload) {
+      return chain.then(function () {
+        // Solo vuelve a la lista lo que no llegó; un "no" del servidor no se arregla reintentando.
+        return send(payload).then(function () {}, function () { left.push(payload); });
+      });
+    }, Promise.resolve()).then(function () {
+      // Lo que se guardó mientras tanto también queda.
+      savePending(left.concat(pendingList().slice(list.length)));
+      flushing = false;
+    });
+  }
+  flushPending();
+  window.addEventListener('online', flushPending);
+
+  var RETRYING = 'Hay mucha gente anotándose. Lo seguimos intentando…';
+  var KEPT = 'No pudimos conectar. Lo guardamos en este navegador y lo mandamos solo la próxima vez que entres.';
+
+  function goTo(n) {
+    joinForm.hidden = n !== 1;
+    profileForm.hidden = n !== 2;
+    done.hidden = n !== 3;
+    document.getElementById('bar-2').classList.toggle('on', n >= 2);
+    stepLabel.textContent = n === 1 ? 'Paso 1 de 2' : n === 2 ? 'Paso 2 de 2' : 'Listo';
+    var focusEl = n === 2 ? profileForm.querySelector('input[name=level]') : n === 3 ? document.getElementById('done-title') : null;
+    if (focusEl) focusEl.focus({ preventScroll: true });
+    var card = document.getElementById('anotate');
+    if (card.getBoundingClientRect().top < 0) reach(card);
+  }
+
+  joinForm.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var btn = joinForm.querySelector('button[type=submit]');
+    var email = field(joinForm, 'email').value.trim();
+    var name = field(joinForm, 'name').value.trim();
+    msg(joinForm, '');
+    if (!EMAIL.test(email)) { fieldErr(joinForm, 'email', 'Revisa el email: no parece válido.'); field(joinForm, 'email').focus(); return; }
+    fieldErr(joinForm, 'email', '');
+    if (!field(joinForm, 'age16').checked) { fieldErr(joinForm, 'age16', 'Para anotarte tienes que tener 16 años o más.'); field(joinForm, 'age16').focus(); return; }
+    fieldErr(joinForm, 'age16', '');
+    if (field(joinForm, 'company').value) return; // robot
+
+    var payload = context();
+    payload.step = 'join';
+    payload.email = email;
+    payload.name = name;
+    payload.age16 = true;
+    btn.disabled = true;
+    send(payload, function () { msg(joinForm, RETRYING); }).then(function (res) {
+      btn.disabled = false;
+      msg(joinForm, '');
+      if (!res.ok) {
+        if (res.error === 'email') { fieldErr(joinForm, 'email', 'Revisa el email: no parece válido.'); return; }
+        if (res.error === 'age') { fieldErr(joinForm, 'age16', 'Para anotarte tienes que tener 16 años o más.'); return; }
+        if (res.error === 'captcha') { msg(joinForm, 'No pudimos comprobar que eres una persona. Recarga la página y prueba de nuevo.', true); return; }
+        msg(joinForm, 'No pudimos guardarlo. Prueba de nuevo en un momento.', true);
+        return;
+      }
+      who = { email: email, key: res.key, name: name };
+      document.getElementById('profile-lede').textContent =
+        (name ? 'Listo, ' + name + ': ya estás en la lista. ' : 'Ya estás en la lista. ') + 'Dos preguntas rápidas. Instagram y WhatsApp, solo si quieres.';
+      goTo(2);
+    }).catch(function () {
+      btn.disabled = false;
+      if (keepForLater(payload)) msg(joinForm, KEPT, true);
+      else msg(joinForm, 'No pudimos conectar. Prueba de nuevo en un momento.', true);
+    });
+  });
+
+  function finish(note) {
+    var title = document.getElementById('done-title');
+    title.textContent = who.name ? '¡Listo, ' + who.name + '! Estás en la lista.' : '¡Listo! Estás en la lista.';
+    var noteEl = document.getElementById('done-note');
+    noteEl.textContent = note || '';
+    noteEl.hidden = !note;
+    goTo(3);
+  }
+
+  /** Error de un grupo (nivel o temas): no tienen un solo campo donde marcarlo. */
+  function groupErr(id, text) {
+    var el = document.getElementById('err-' + id);
+    el.textContent = text || '';
+    el.hidden = !text;
+  }
+  profileForm.addEventListener('change', function (ev) {
+    if (ev.target.name === 'level') groupErr('level', '');
+    if (ev.target.name === 'topic') groupErr('topics', '');
+  });
+
+  profileForm.addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var btn = profileForm.querySelector('button[type=submit]');
+    var level = profileForm.querySelector('input[name=level]:checked');
+    var ig = field(profileForm, 'instagram').value.trim();
+    var wa = field(profileForm, 'whatsapp').value.trim();
+    var learn = field(profileForm, 'learn').value.trim();
+    var topics = Array.prototype.map.call(profileForm.querySelectorAll('input[name=topic]:checked'), function (c) { return c.value; });
+    var contactOk = field(profileForm, 'contact').checked;
+    var bad = false;
+    msg(profileForm, '');
+    if (!level) { groupErr('level', 'Elige cómo tocas hoy.'); bad = true; } else groupErr('level', '');
+    if (!topics.length) { groupErr('topics', 'Elige al menos una.'); bad = true; } else groupErr('topics', '');
+    if (ig && !igHandle(ig)) { fieldErr(profileForm, 'instagram', 'Escríbelo como @usuario.'); bad = true; } else fieldErr(profileForm, 'instagram', '');
+    if (wa && !phoneOk(wa)) { fieldErr(profileForm, 'whatsapp', 'Revisa el número: con código de área.'); bad = true; } else fieldErr(profileForm, 'whatsapp', '');
+    if ((ig || wa) && !contactOk) { fieldErr(profileForm, 'contact', 'Marca la casilla para que podamos escribirte, o deja Instagram y WhatsApp vacíos.'); bad = true; } else fieldErr(profileForm, 'contact', '');
+    if (bad) {
+      var first = profileForm.querySelector('.field-err:not([hidden])');
+      if (first) (first.closest('fieldset, label, .field-row') || first).scrollIntoView({ block: 'center', behavior: 'smooth' });
+      return;
+    }
+
+    btn.disabled = true;
+    var payload = { step: 'profile', email: who.email, key: who.key, level: level.value, topics: topics, instagram: ig, whatsapp: wa, learn: learn, contact: contactOk, elapsed: Date.now() - loadedAt, test: TEST };
+    send(payload, function () { msg(profileForm, RETRYING); })
+      .then(function (res) {
+        btn.disabled = false;
+        msg(profileForm, '');
+        if (res.ok) { finish(); return; }
+        if (res.error === 'fields') {
+          (res.fields || []).forEach(function (f) {
+            if (f === 'instagram') fieldErr(profileForm, 'instagram', 'Escríbelo como @usuario.');
+            if (f === 'whatsapp') fieldErr(profileForm, 'whatsapp', 'Revisa el número: con código de área.');
+            if (f === 'level') groupErr('level', 'Elige cómo tocas hoy.');
+            if (f === 'learn') groupErr('topics', 'Elige al menos una.');
+          });
+          return;
+        }
+        if (res.error === 'consent') { fieldErr(profileForm, 'contact', 'Marca la casilla para que podamos escribirte, o deja Instagram y WhatsApp vacíos.'); return; }
+        msg(profileForm, 'No pudimos guardarlo. Prueba de nuevo en un momento.', true);
+      })
+      .catch(function () {
+        btn.disabled = false;
+        // El paso 1 ya salió, así que está en la lista: lo de este paso se guarda y sale después.
+        if (keepForLater(payload)) { finish(KEPT); return; }
+        msg(profileForm, 'No pudimos conectar. Prueba de nuevo en un momento.', true);
+      });
+  });
+
+  // Los botones de "acceso anticipado" dejan el cursor en el primer campo, listo para escribir.
+  Array.prototype.forEach.call(document.querySelectorAll('[data-signup]'), function (a) {
+    a.addEventListener('click', function () {
+      setTimeout(function () {
+        if (!joinForm.hidden) field(joinForm, 'name').focus({ preventScroll: true });
+      }, 450);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

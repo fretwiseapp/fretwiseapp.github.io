@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'none'; base-uri 'self'; form-action 'none'" />
+  <title>Política de privacidad · Fretwise</title>
+  <meta name="description" content="Qué datos recopila Fretwise y para qué los usa." />
+  <meta name="robots" content="index, follow" />
+  <meta name="color-scheme" content="light" />
+  <meta name="theme-color" content="#F7F7F6" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23111111'/%3E%3Cg stroke='%233a3a3a' stroke-width='1.5' stroke-linecap='round'%3E%3Cpath d='M16 12v40M32 12v40M48 12v40'/%3E%3C/g%3E%3Ccircle cx='16' cy='42' r='6' fill='%23635BFF'/%3E%3Ccircle cx='32' cy='30' r='6' fill='%23ffffff'/%3E%3Ccircle cx='48' cy='18' r='6' fill='%23ffffff'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <style>
+    @font-face { font-family:'Inter'; font-style:normal; font-weight:400; font-display:swap; src:url('/fonts/inter-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family:'Inter'; font-style:normal; font-weight:600; font-display:swap; src:url('/fonts/inter-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family:'Inter'; font-style:normal; font-weight:700; font-display:swap; src:url('/fonts/inter-latin-700-normal.woff2') format('woff2'); }
+    @font-face { font-family:'Inter'; font-style:italic; font-weight:500; font-display:swap; src:url('/fonts/inter-latin-500-italic.woff2') format('woff2'); }
+
+    /* Los colores del pie y las preguntas de la landing, en su versión clara: un documento para leer. */
+    :root {
+      --bg: #F7F7F6;
+      --card: #ffffff;
+      --text: #111111;
+      --text-2: rgba(17,17,17,0.68);
+      --line: rgba(17,17,17,0.10);
+      --accent: #635BFF;
+      --accent-ink: #4b43e0;
+      --mark: rgba(240,169,43,0.22);
+      --gutter: clamp(16px, 4vw, 40px);
+      color-scheme: light;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent-ink); text-underline-offset: 3px; }
+    a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+    .wrap { max-width: 760px; margin: 0 auto; padding-inline: var(--gutter); }
+
+    header { border-bottom: 1px solid var(--line); }
+    .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 72px; }
+    .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; min-height: 44px; }
+    .brand-wm { font-size: 19px; font-weight: 500; font-style: italic; letter-spacing: -0.01em; }
+    .back { font-size: 15px; font-weight: 600; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+
+    main { padding-block: 56px 88px; }
+    .eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-2); }
+    h1 { font-size: clamp(2rem, 6vw, 3rem); font-weight: 700; line-height: 1.05; letter-spacing: -0.03em; margin: 12px 0 14px; text-wrap: balance; }
+    .updated { color: var(--text-2); font-size: 15px; margin-bottom: 28px; }
+    .lede { font-size: 19px; margin-bottom: 8px; }
+    h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; margin: 48px 0 14px; padding-top: 28px; border-top: 1px solid var(--line); text-wrap: balance; }
+    h3 { font-size: 17px; font-weight: 700; margin: 26px 0 8px; }
+    p + p, p + ul, ul + p { margin-top: 12px; }
+    ul { padding-left: 1.25em; }
+    li + li { margin-top: 6px; }
+    strong { font-weight: 700; }
+    footer { border-top: 1px solid var(--line); padding-block: 32px 44px; font-size: 15px; color: var(--text-2); }
+    .foot { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; justify-content: space-between; }
+    .foot nav { display: inline-flex; flex-wrap: wrap; gap: 4px 22px; }
+    .foot nav a { color: var(--text-2); text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+    .foot nav a:hover { color: var(--text); }
+    @media (max-width: 520px) {
+      main { padding-block: 40px 64px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="wrap top">
+    <a class="brand" href="/" aria-label="Fretwise, ir al inicio">
+      <svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
+        <rect width="64" height="64" rx="14" fill="#111111"/>
+        <g stroke="#3a3a3a" stroke-width="1.5" stroke-linecap="round"><path d="M16 12v40M32 12v40M48 12v40"/></g>
+        <circle cx="16" cy="42" r="6" fill="#635BFF"/><circle cx="32" cy="30" r="6" fill="#fff"/><circle cx="48" cy="18" r="6" fill="#fff"/>
+      </svg>
+      <span class="brand-wm">fretwise</span>
+    </a>
+    <a class="back" href="/">← Volver al inicio</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="eyebrow">Fretwise</p>
+  <h1>Política de privacidad</h1>
+  <p class="updated"><strong>Última actualización:</strong> 28 de octubre de 2026</p>
+
+  <p class="lede">Aquí te contamos qué datos usa Fretwise, para qué y qué puedes hacer con ellos. Leerla no te obliga a nada: cuando necesitamos tu permiso, te lo pedimos con una casilla.</p>
+
+  <h2>1. Qué datos recopilamos</h2>
+  <p>Los que tú decides darnos en el formulario: tu correo y, si quieres, tu nombre. Si sigues al segundo paso, tu nivel con la guitarra y lo que te gustaría aprender y, solo si quieres, tu usuario de Instagram y tu número de WhatsApp.</p>
+  <p>Al enviar el formulario también se guardan la fecha, el tipo de dispositivo y la página desde la que llegaste. Si llegaste por un enlace nuestro, también guardamos de dónde venía: el sitio o la red (por ejemplo, «hispasonic» o «instagram»), la campaña y la publicación concreta, para saber qué canales traen gente. Estos datos no te identifican. Si nos das permiso para escribirte por Instagram o WhatsApp, guardamos también cuándo lo diste. Si llegaste tocando «Avísame» en algo que está en camino, guardamos qué era, para avisarte cuando esté.</p>
+  <p>Si respondes la encuesta de la app, guardamos tus respuestas y el día, sin nada que diga quién eres: no se cruza con el formulario ni con tu correo. En la línea libre, no escribas datos personales. Responder es siempre opcional; si decides hacerlo, la encuesta se envía aunque tu navegador pida no ser rastreado. Las respuestas se guardan hasta 12 meses, más las copias de seguridad, que se conservan 8 semanas.</p>
+  <p>Si nos escribes, guardamos tu mensaje y tu correo para responderte, mientras dure la consulta y el tiempo que pida la ley.</p>
+
+  <p>Para separar personas de robots, el formulario usa Turnstile, de Cloudflare. Se activa cuando empiezas a completar el formulario, aunque después no lo envíes. Turnstile revisa datos técnicos de tu navegador y tu conexión (como tu dirección IP); no usa cookies para seguirte y no nos pasa esos datos.</p>
+  <p>Si en Practicar activas <strong>Escuchar</strong>, la app usa el micrófono (o tu guitarra MIDI, si la conectas) para reconocer las notas que tocas. Todo se analiza en tu propio dispositivo: el sonido no se graba, no se guarda y no se envía a ningún lado. El micrófono se apaga cuando desactivas Escuchar o sales de la pantalla.</p>
+  <p>Hoy la app guarda tu progreso y tus preferencias en tu propio dispositivo. Lo único que sale de él es el aviso de uso que se explica abajo. Esto puede cambiar a medida que Fretwise crezca; cuando cambie, lo vas a ver reflejado en esta página.</p>
+  <p>Para saber cuánta gente vuelve, la app guarda en tu navegador la fecha de tu primera visita y la del último aviso. Una vez por día nos envía solo eso: la fecha de tu primera visita y si usas un dispositivo táctil o una computadora. Si tocas algo marcado como «En camino», nos envía qué tocaste. No va ningún número ni código que te distinga de otra persona o a tu equipo de otro, ni tu nombre, tu correo o nada de lo que escribes; el envío sale sin cookies, y no se puede cruzar con el formulario. Si tu navegador pide no ser rastreado (Global Privacy Control o «No rastrear»), la app no envía nada. Para empezar de cero, borra los datos del sitio en tu navegador. Estos registros se guardan hasta 12 meses, más las copias de seguridad, que se conservan 8 semanas.</p>
+  <p>Los servicios que alojan el sitio pueden registrar datos técnicos de cada visita, como pasa en cualquier sitio web.</p>
+
+  <h2>2. Para qué los usamos, y con qué permiso</h2>
+  <ul>
+    <li>Para escribirte por correo con novedades, invitaciones y encuestas de Fretwise, y para avisarte cuando esté lo que pediste con «Avísame». No te mandamos ofertas ni publicidad. Base: tu consentimiento, al anotarte.</li>
+    <li>Para escribirte por Instagram o WhatsApp, solo si marcaste la casilla que nos da ese permiso. Base: ese consentimiento.</li>
+    <li>Para mantener la lista de personas anotadas. Base: tu consentimiento.</li>
+    <li>Para entender quién usa Fretwise y decidir qué construir, con lo que nos contaste en el formulario. Base: nuestro interés legítimo en mejorar Fretwise; puedes oponerte.</li>
+    <li>Para medir, sin saber quién eres, cuánta gente vuelve a la app y qué le interesa. Base: nuestro interés legítimo; para salir, mira la sección 6.</li>
+    <li>Para mejorar Fretwise con lo que respondes en la encuesta. Base: tu consentimiento; respondes solo si quieres.</li>
+  </ul>
+  <p>Puedes retirar tu consentimiento cuando quieras; lo que hicimos antes sigue siendo válido. No vendemos tus datos, no los usamos para publicidad y no armamos perfiles de nadie.</p>
+  <p>Los datos del formulario se guardan mientras sigas anotado. Si pides la baja, los borramos; las copias de seguridad que los tengan desaparecen en 8 semanas.</p>
+
+  <h2>3. Edad</h2>
+  <p>Para anotarte tienes que tener 16 años o más. Si tienes menos, no nos envíes tus datos ni respondas la encuesta. No recopilamos a sabiendas datos de menores de 16; si descubrimos que alguno se anotó, borramos sus datos.</p>
+  <p>Al enviar el formulario declaras que los datos son tuyos y correctos.</p>
+
+  <h2>4. Quién los guarda y dónde</h2>
+  <p>Usamos estos proveedores, que pueden guardar datos fuera de tu país, incluido Estados Unidos:</p>
+  <ul>
+    <li><strong>Google</strong> (Apps Script y Hojas de cálculo): recibe el formulario, los registros de uso y las respuestas de la encuesta, y los guarda.</li>
+    <li><strong>Cloudflare</strong> (Turnstile): separa personas de robots en el formulario.</li>
+    <li><strong>El servicio de alojamiento web</strong>: sirve el sitio y la app, y registra datos técnicos de cada visita.</li>
+  </ul>
+  <p>Estos proveedores protegen los datos que salen de la Unión Europea, el Reino Unido o Brasil con las cláusulas contractuales tipo aprobadas para eso o con el Marco de Privacidad de Datos UE-EE. UU. Puedes pedirnos más detalle sobre estas garantías. Si sumamos o cambiamos un proveedor, lo actualizamos en esta página antes de usarlo.</p>
+
+  <h2>5. Seguridad</h2>
+  <p>Tomamos medidas razonables para cuidar la información, pero ningún sistema es infalible y no podemos garantizar una seguridad absoluta. Si alguna vez hubiera un problema que afecte tus datos, te avisamos como pide la ley.</p>
+
+  <h2>6. Tus derechos, baja y consultas</h2>
+  <p>El responsable de los datos es Fretwise, en Argentina. Puedes pedir ver tus datos, corregirlos, borrarlos, recibir una copia para llevarlos a otro lado, limitar o oponerte a su uso, o que no te contactemos más. Para eso, o para cualquier consulta, escríbenos a <a href="mailto:fretwisesupport@gmail.com">fretwisesupport@gmail.com</a> o responde cualquier mensaje que te hayamos enviado. Te contestamos dentro de los plazos que fija la ley, sin costo.</p>
+  <p>Los registros de uso de la app son anónimos: no tienen nada que permita saber cuál es el tuyo ni asociarlo a una persona, así que no podemos mostrártelo ni borrarlo a pedido. Para salir, activa en tu navegador Global Privacy Control o «No rastrear», y la app deja de enviarlos; para que olvide tus fechas, borra los datos del sitio. Lo mismo vale para las respuestas de la encuesta: no tienen nada que las ligue a ti, así que no podemos mostrarlas ni borrarlas; si escribiste un dato personal en la línea libre, cuéntanos qué escribiste y lo borramos.</p>
+  <p>Puedes pedir acceso a tus datos de forma gratuita, cada seis meses como mínimo, salvo que tengas un interés legítimo para pedirlo antes (artículo 14 de la Ley 25.326). La Agencia de Acceso a la Información Pública, autoridad de control de la Ley 25.326, atiende las denuncias y reclamos de quienes vean afectados sus derechos sobre sus datos personales.</p>
+  <p>Si vives en otro país, también puedes reclamar ante tu autoridad de protección de datos: en Brasil, la ANPD; en el Reino Unido, la ICO; en la Unión Europea, la autoridad de tu país.</p>
+
+  <h2>7. Cambios</h2>
+  <p>Si cambiamos esta política, actualizamos la fecha de arriba. Si el cambio es importante, se lo avisamos por correo a quienes estén anotados. Un uso nuevo que necesite tu permiso no empieza sin pedírtelo.</p>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>© 2026 Fretwise.</span>
+    <nav aria-label="Enlaces del pie">
+      <a href="/">Inicio</a>
+      <a href="/app/">Abrir la app</a>
+      <a href="/#anotate">Acceso anticipado</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
